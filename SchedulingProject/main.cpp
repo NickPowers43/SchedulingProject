@@ -1,10 +1,12 @@
+
+#include "stdafx.h"
 // ImGui - standalone example application for Glfw + OpenGL 3, using programmable pipeline
 // If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
 
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
 #include <stdio.h>
-#include <GL/gl3w.h>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 static void error_callback(int error, const char* description)
@@ -26,7 +28,9 @@ int main(int, char**)
 #endif
     GLFWwindow* window = glfwCreateWindow(1280, 720, "ImGui OpenGL3 example", NULL, NULL);
     glfwMakeContextCurrent(window);
-    gl3wInit();
+
+	glewExperimental = GL_TRUE;
+    glewInit();
 
     // Setup ImGui binding
     ImGui_ImplGlfwGL3_Init(window, true);
