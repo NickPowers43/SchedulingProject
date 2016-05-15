@@ -6,13 +6,12 @@ class JobRun
 {
 public:
 	JobRun();
-	JobRun(JobData & data, vector<float> & syncPoints);
+	JobRun(JobData & data);
 	~JobRun();
 
 	void Simulate();
 
 	JobData data;
-	vector<float> syncPoints;
 	vector<vector<float>> jobStarts;
 	vector<int> lastJob;
 

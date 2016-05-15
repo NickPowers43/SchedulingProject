@@ -6,6 +6,8 @@
 #include <vector>
 #include <sstream>
 
+using namespace std;
+
 static float CalculateOptimal(vector<vector<float>> jobs, vector<float>& syncPoints, int remainingSyncPoints)
 {
 	syncPoints = vector<float>();
@@ -103,9 +105,9 @@ ScheduleViewer::ScheduleViewer()
 	exJobs.back().push_back(0.385f);
 	exJobs.back().push_back(0.1f);
 
-	jd = JobData(exJobs);
+	jd = JobData(exJobs, syncPoints);
 
-	jr = JobRun(jd, syncPoints);
+	jr = JobRun(jd);
 
 	selectedServer = 0;
 	selectedJob = 0;
@@ -130,31 +132,13 @@ ScheduleViewer::~ScheduleViewer()
 void ScheduleViewer::OnGUI()
 {
 	bool updateJobRun = false;
-	updateJobRun |= ImGui::SliderInt("Servers", &serverCount, 1, 8);
-	updateJobRun |= ImGui::SliderInt("Jobs", &jobCount, 1, 8);
-	if (ImGui::InputInt("Sync Points", &syncPointCount))
-	{
-		updateJobRun |= true;
-		if (syncPointCount < 1)
-		{
-			syncPointCount = 1;
-		}
-		while (syncPoints.size() > syncPointCount)
-		{
-			syncPoints.pop_back();
-		}
-		while (syncPoints.size() < syncPointCount)
-		{
-			if (syncPoints.size())
-			{
-				syncPoints.push_back(syncPoints.back() + 0.2f);
-			}
-			else
-			{
-				syncPoints.push_back(1.0f);
-			}
-		}
-	}
+	serverCount = jd.jobs.size();
+	if (updateJobRun |= ImGui::SliderInt("Servers", &serverCount, 1, 16))
+		saves.push(jd);
+	jobCount = jd.jobs[0].size();
+	if (updateJobRun |= ImGui::SliderInt("Jobs", &jobCount, 1, 16))
+		saves.push(jd);
+
 	while (jd.jobs.size() > serverCount)
 	{
 		jd.jobs.pop_back();
@@ -167,6 +151,7 @@ void ScheduleViewer::OnGUI()
 			jd.jobs.back().push_back(0.1f);
 		}
 	}
+
 	for_each(jd.jobs.begin(), jd.jobs.end(), [&](vector<float>& jobs) {
 		while (jobs.size() > jobCount)
 		{
@@ -289,6 +274,7 @@ void ScheduleViewer::OnGUI()
 						dist = -dist;
 					if (dist <= 4.0f)
 					{
+						saves.push(jd);
 						selectedSyncPoint = i;
 					}
 				}
@@ -336,9 +322,34 @@ void ScheduleViewer::OnGUI()
 	ImGui::LabelText(ss.str().c_str(), "Idle time : ");
 
 	updateJobRun |= ImGui::InputFloat("job time", selectedJobPtr, 0.0075f, 0.05f, 3);
+	ImGui::SameLine();
+	if (ImGui::InputInt("Sync Points", &syncPointCount))
+	{
+		updateJobRun |= true;
+		if (syncPointCount < 1)
+		{
+			syncPointCount = 1;
+		}
+		while (syncPoints.size() > syncPointCount)
+		{
+			syncPoints.pop_back();
+		}
+		while (syncPoints.size() < syncPointCount)
+		{
+			if (syncPoints.size())
+			{
+				syncPoints.push_back(syncPoints.back() + 0.2f);
+			}
+			else
+			{
+				syncPoints.push_back(1.0f);
+			}
+		}
+	}
 
 	if (ImGui::Button("Minimize idle time at all costs"))
 	{
+		saves.push(jd);
 		vector<float> temp;
 		CalculateOptimal(jd.jobs, temp, INT_MAX);
 		syncPoints = temp;
@@ -347,6 +358,7 @@ void ScheduleViewer::OnGUI()
 	}
 	if (ImGui::Button("Optimize sync point usage"))
 	{
+		saves.push(jd);
 		vector<float> temp;
 		CalculateOptimal(jd.jobs, temp, syncPointCount);
 		syncPoints = temp;
@@ -356,6 +368,31 @@ void ScheduleViewer::OnGUI()
 	if (updateJobRun)
 	{
 		//update job run
-		jr = JobRun(jd, syncPoints);
+		jr = JobRun(jd);
+	}
+
+	if (saves.size())
+	{
+		if (ImGui::Button("Undo"))
+		{
+			jd = saves.top();
+			saves.pop();
+			jr = JobRun(jd);
+		}
+	}
+
+	if (saves.size() > 100)
+	{
+		stack<JobData> temp;
+		while (saves.size() > 20)
+		{
+			temp.push(saves.top());
+			saves.pop();
+		}
+		while (temp.size())
+		{
+			saves.push(temp.top());
+			temp.pop();
+		}
 	}
 }

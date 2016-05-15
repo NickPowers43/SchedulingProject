@@ -3,6 +3,7 @@
 #include "JobRun.h"
 #include "JobData.h"
 #include <vector>
+#include <stack>
 
 using namespace std;
 
@@ -17,6 +18,7 @@ public:
 private:
 
 	vector<float> syncPoints;
+	stack<JobData> saves;
 
 	JobData jd;
 	JobRun jr;

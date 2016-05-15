@@ -5,7 +5,7 @@
 JobData::JobData()
 {
 }
-JobData::JobData(vector<vector<float>> jobs) : jobs(jobs)
+JobData::JobData(vector<vector<float>> jobs, vector<float> syncPoints) : jobs(jobs), syncPoints(syncPoints)
 {
 }
 

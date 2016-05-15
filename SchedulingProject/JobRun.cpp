@@ -9,7 +9,7 @@ bool FCompare(float i, float j) { return (i<j); }
 JobRun::JobRun()
 {
 }
-JobRun::JobRun(JobData & data, vector<float> & syncPoints) : data(data), jobStarts(data.jobs), syncPoints(syncPoints)
+JobRun::JobRun(JobData & data) : data(data), jobStarts(data.jobs)
 {
 	for (size_t i = 0; i < data.jobs.size(); i++)
 	{
@@ -24,7 +24,7 @@ JobRun::~JobRun()
 
 void JobRun::Simulate()
 {
-	sort(syncPoints.begin(), syncPoints.end());
+	sort(data.syncPoints.begin(), data.syncPoints.end());
 
 	idleTime = 0.0f;
 	for (size_t i = 0; i < data.jobs.size(); i++)
@@ -37,11 +37,11 @@ void JobRun::Simulate()
 		{
 			start = start + data.jobs[i][j - 1];
 
-			while (k < syncPoints.size() && syncPoints[k] < start)
+			while (k < data.syncPoints.size() && data.syncPoints[k] < start)
 			{
 				k++;
 			}
-			if (k >= syncPoints.size())
+			if (k >= data.syncPoints.size())
 			{
 				if (j < lastJob[i])
 				{
@@ -52,7 +52,7 @@ void JobRun::Simulate()
 			}
 			else
 			{
-				float temp = syncPoints[k] - start;
+				float temp = data.syncPoints[k] - start;
 				idleTime += temp;
 				start += temp;
 			}

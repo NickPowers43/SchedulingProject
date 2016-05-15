@@ -8,9 +8,10 @@ class JobData
 {
 public:
 	JobData();
-	JobData(vector<vector<float>> jobs);
+	JobData(vector<vector<float>> jobs, vector<float> syncPoints);
 	~JobData();
 
 	vector<vector<float>> jobs;
+	vector<float> syncPoints;
 };
 
