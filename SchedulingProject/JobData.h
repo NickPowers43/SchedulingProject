@@ -7,7 +7,7 @@ using namespace std;
 class JobData
 {
 public:
-	//JobData();
+	JobData();
 	JobData(vector<vector<float>> jobs);
 	~JobData();
 

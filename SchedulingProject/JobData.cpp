@@ -2,9 +2,9 @@
 #include "JobData.h"
 
 
-//JobData::JobData()
-//{
-//}
+JobData::JobData()
+{
+}
 JobData::JobData(vector<vector<float>> jobs) : jobs(jobs)
 {
 }

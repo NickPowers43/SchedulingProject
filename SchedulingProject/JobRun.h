@@ -5,6 +5,7 @@
 class JobRun
 {
 public:
+	JobRun();
 	JobRun(JobData & data, vector<float> & syncPoints);
 	~JobRun();
 

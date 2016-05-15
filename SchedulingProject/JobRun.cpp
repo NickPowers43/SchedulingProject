@@ -6,6 +6,9 @@ using namespace std;
 
 bool FCompare(float i, float j) { return (i<j); }
 
+JobRun::JobRun()
+{
+}
 JobRun::JobRun(JobData & data, vector<float> & syncPoints) : data(data), jobStarts(data.jobs), syncPoints(syncPoints)
 {
 	for (size_t i = 0; i < data.jobs.size(); i++)
