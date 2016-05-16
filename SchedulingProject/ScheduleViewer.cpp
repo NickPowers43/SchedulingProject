@@ -159,9 +159,6 @@ void ScheduleViewer::OnGUI()
 	if (updateJobRun |= ImGui::SliderInt("Jobs", &jobCount, 1, MAX_JOBS))
 		saves.push(jd);
 
-	//get the boundaries of this item
-	ImVec2 reg = ImGui::GetContentRegionAvail();
-	ImVec2 tl = ImGui::GetCursorScreenPos();
 
 	while (jd.jobs.size() > serverCount)
 	{
@@ -187,6 +184,16 @@ void ScheduleViewer::OnGUI()
 		}
 	});
 
+	if (snapshot)
+	{
+		DrawJobRun(*snapshot);
+	}
+
+	//Draw working schedule
+
+	//get the boundaries of this item
+	ImVec2 reg = ImGui::GetContentRegionAvail();
+	ImVec2 tl = ImGui::GetCursorScreenPos();
 	ImVec2 br(tl.x + reg.x, tl.y + reg.x);
 	ImVec2 tlCorner(tl);
 
@@ -324,11 +331,6 @@ void ScheduleViewer::OnGUI()
 	ImGui::SetCursorScreenPos(tl);
 	ImGui::InvisibleButton("Background", ImVec2(reg.x, tlCorner.y - tl.y));
 
-	if (snapshot)
-	{
-		DrawJobRun(*snapshot);
-	}
-
 	ss.str(string());
 	ss << jr.idleTime;
 	ImGui::LabelText(ss.str().c_str(), "Idle time");
@@ -376,6 +378,7 @@ void ScheduleViewer::OnGUI()
 		syncPointCount = jd.syncPoints.size();
 		updateJobRun = true;
 	}
+	ImGui::SameLine();
 	ImGui::PopStyleColor(3);
 
 	ImGui::PopItemWidth();
@@ -403,6 +406,14 @@ void ScheduleViewer::OnGUI()
 		jr = JobRun(jd);
 	}
 
+	ImGuiStyle &style = ImGui::GetStyle();
+
+	tl = ImGui::GetCursorScreenPos();
+	dl->AddLine(ImVec2(tl.x, tl.y), ImVec2(tl.x + reg.x, tl.y), 0xffffffff);
+	tl.y += style.ItemSpacing.y;
+	tl.y += 15.0f;
+	ImGui::SetCursorScreenPos(tl);
+
 	if (ImGui::Button("Undo"))
 	{
 		if (saves.size())
@@ -418,9 +429,18 @@ void ScheduleViewer::OnGUI()
 		if (snapshot)
 		{
 			delete snapshot;
+			snapshot = NULL;
 		}
-		//JobData jd2(jd);
 		snapshot = new JobRun(jd);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Remove Snapshot"))
+	{
+		if (snapshot)
+		{
+			delete snapshot;
+			snapshot = NULL;
+		}
 	}
 
 	if (saves.size() > 100)
