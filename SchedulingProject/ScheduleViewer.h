@@ -5,6 +5,8 @@
 #include <vector>
 #include <stack>
 
+#define MAX_JOBS 16
+
 using namespace std;
 
 class ScheduleViewer
@@ -15,25 +17,27 @@ public:
 
 	void OnGUI();
 
+	void DrawJobRun(JobRun & jobRun);
+
 private:
 
-	vector<float> syncPoints;
 	stack<JobData> saves;
 
 	JobData jd;
 	JobRun jr;
+	JobRun* snapshot;
 
 	int selectedServer;
 	int selectedJob;
 
-	float* selectedJobPtr;
+	int* selectedJobPtr;
 
 	int selectedSyncPoint;
 	int serverCount;
 	int jobCount;
 	int syncPointCount;
 
-	unsigned int* colors;
+	float** colors;
 	int colorCount;
 };
 

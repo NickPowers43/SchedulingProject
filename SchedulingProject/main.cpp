@@ -55,6 +55,7 @@ int main(int, char**)
     ImVec4 clear_color = ImColor(114, 144, 154);
 
 	ScheduleViewer sv;
+	ScheduleViewer sv2;
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -84,6 +85,7 @@ int main(int, char**)
 		style.Alpha = 1.0f;
 
 		sv.OnGUI();
+		//sv2.OnGUI();
 
 		ImGui::End();
 

@@ -8,10 +8,11 @@ class JobData
 {
 public:
 	JobData();
-	JobData(vector<vector<float>> jobs, vector<float> syncPoints);
+	JobData(const JobData& jd);
+	JobData(vector<vector<int>> jobs, vector<int> syncPoints);
 	~JobData();
 
-	vector<vector<float>> jobs;
-	vector<float> syncPoints;
+	vector<vector<int>> jobs;
+	vector<int> syncPoints;
 };
 

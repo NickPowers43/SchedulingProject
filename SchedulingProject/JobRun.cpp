@@ -4,8 +4,6 @@
 
 using namespace std;
 
-bool FCompare(float i, float j) { return (i<j); }
-
 JobRun::JobRun()
 {
 }
@@ -31,7 +29,7 @@ void JobRun::Simulate()
 	{
 		int k = 0;
 		jobStarts[i][0] = 0.0f;
-		float start = 0.0f;
+		int start = 0.0f;
 		lastJob[i] = data.jobs[i].size();
 		for (size_t j = 1; j < data.jobs[i].size(); j++)
 		{
