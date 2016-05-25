@@ -335,7 +335,10 @@ void ScheduleViewer::OnGUI()
 	ss << jr.idleTime;
 	ImGui::LabelText(ss.str().c_str(), "Idle time");
 
-	updateJobRun |= ImGui::InputInt("Job time", selectedJobPtr, 500, 1000);
+	float jobTime = (float)*selectedJobPtr / 10000.0f;
+	updateJobRun |= ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f);
+	*selectedJobPtr = jobTime * 10000.0f;
+
 	ImGui::SameLine();
 	if (ImGui::InputInt("Sync Points", &syncPointCount))
 	{
