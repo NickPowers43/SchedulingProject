@@ -39,26 +39,21 @@ static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& s
 			{
 				if (jobs[j].size() > 1)
 				{
-					int jPlace = 0;
-					while (jPlace < jobs[j].size() && jobs[j][jPlace] != VAL_ZERO) jPlace++;
-					if (jobs[j].size() - jPlace > 1)
+					jobs2.push_back(vector<ValType>());
+					if (j != i)
 					{
-						jobs2.push_back(vector<ValType>());
-						if (j != i)
+						if (jobs[j].front() > jobs[i].front())
 						{
-							if (jobs[j][jPlace] > jobs[i].front())
-							{
-								jobs2.back().push_back(jobs[j][jPlace] - jobs[i].front());
-							}
-							else
-							{
-								idleTime += jobs[i].front() - jobs[j][jPlace];
-							}
+							jobs2.back().push_back(jobs[j].front() - jobs[i].front());
 						}
-						for (size_t k = jPlace + 1; k < jobs[j].size(); k++)
+						else
 						{
-							jobs2.back().push_back(jobs[j][k]);
+							idleTime += jobs[i].front() - jobs[j].front();
 						}
+					}
+					for (size_t k = 1; k < jobs[j].size(); k++)
+					{
+						jobs2.back().push_back(jobs[j][k]);
 					}
 				}
 			}
@@ -68,7 +63,7 @@ static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& s
 
 			if (idleTime < best)
 			{
-				bestSyncPoint = jobs[i][0];
+				bestSyncPoint = jobs[i].front();
 				best = idleTime;
 				bestPoints = temp;
 			}
