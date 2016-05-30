@@ -5,17 +5,24 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
 
-static float CalculateOptimal(vector<vector<int>> jobs, vector<int>& syncPoints, int remainingSyncPoints)
+typedef int ValType;
+#define VAL_ZERO 0
+#define VAL_INF INT_MAX
+
+#define FILEPATH_BUF_SIZE 256
+
+static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& syncPoints, int remainingSyncPoints)
 {
-	syncPoints = vector<int>();
+	syncPoints = vector<ValType>();
 
 	bool ranOnce = false;
-	int bestSyncPoint = INT_MAX;
+	int bestSyncPoint = VAL_INF;
 	int best = INT_MAX;
-	vector<int> bestPoints;
+	vector<ValType> bestPoints;
 	for (size_t i = 0; i < jobs.size(); i++)
 	{
 		if (jobs[i].size() > 1)
@@ -26,32 +33,37 @@ static float CalculateOptimal(vector<vector<int>> jobs, vector<int>& syncPoints,
 				return INT_MAX;
 			}
 
-			float idleTime = 0.0f;
-			vector<vector<int>> jobs2;
+			ValType idleTime = VAL_ZERO;
+			vector<vector<ValType>> jobs2;
 			for (size_t j = 0; j < jobs.size(); j++)
 			{
 				if (jobs[j].size() > 1)
 				{
-					jobs2.push_back(vector<int>());
-					if (j != i)
+					int jPlace = 0;
+					while (jPlace < jobs[j].size() && jobs[j][jPlace] != VAL_ZERO) jPlace++;
+					if (jobs[j].size() - jPlace > 1)
 					{
-						if (jobs[j].front() > jobs[i].front())
+						jobs2.push_back(vector<ValType>());
+						if (j != i)
 						{
-							jobs2.back().push_back(jobs[j].front() - jobs[i].front());
+							if (jobs[j][jPlace] > jobs[i].front())
+							{
+								jobs2.back().push_back(jobs[j][jPlace] - jobs[i].front());
+							}
+							else
+							{
+								idleTime += jobs[i].front() - jobs[j][jPlace];
+							}
 						}
-						else
+						for (size_t k = jPlace + 1; k < jobs[j].size(); k++)
 						{
-							idleTime += jobs[i].front() - jobs[j].front();
+							jobs2.back().push_back(jobs[j][k]);
 						}
-					}
-					for (size_t k = 1; k < jobs[j].size(); k++)
-					{
-						jobs2.back().push_back(jobs[j][k]);
 					}
 				}
 			}
 
-			vector<int> temp;
+			vector<ValType> temp;
 			idleTime += CalculateOptimal(jobs2, temp, remainingSyncPoints - 1);
 
 			if (idleTime < best)
@@ -63,7 +75,7 @@ static float CalculateOptimal(vector<vector<int>> jobs, vector<int>& syncPoints,
 		}
 	}
 
-	if (bestSyncPoint != INT_MAX)
+	if (bestSyncPoint != VAL_INF)
 	{
 		for (size_t i = 0; i < bestPoints.size(); i++)
 		{
@@ -75,17 +87,24 @@ static float CalculateOptimal(vector<vector<int>> jobs, vector<int>& syncPoints,
 	}
 	if (ranOnce)
 	{
-		return INT_MAX;
+		return VAL_INF;
 	}
 	else
 	{
-		return 0.0f;
+		return VAL_ZERO;
 	}
 
 }
 
 ScheduleViewer::ScheduleViewer()
 {
+	canLoadFile = false;
+	filePath = new char[FILEPATH_BUF_SIZE];
+	for (size_t i = 0; i < FILEPATH_BUF_SIZE; i++)
+	{
+		filePath[i] = '\0';
+	}
+
 	vector<int> syncPoints;
 	syncPoints.push_back(20000);
 	syncPoints.push_back(40000);
@@ -332,7 +351,7 @@ void ScheduleViewer::OnGUI()
 	ImGui::InvisibleButton("Background", ImVec2(reg.x, tlCorner.y - tl.y));
 
 	ss.str(string());
-	ss << jr.idleTime;
+	ss << (jr.idleTime * 0.0001f);
 	ImGui::LabelText(ss.str().c_str(), "Idle time");
 
 	float jobTime = (float)*selectedJobPtr / 10000.0f;
@@ -403,19 +422,7 @@ void ScheduleViewer::OnGUI()
 
 	ImGui::PopItemWidth();
 
-	if (updateJobRun)
-	{
-		//update job run
-		jr = JobRun(jd);
-	}
-
-	ImGuiStyle &style = ImGui::GetStyle();
-
-	tl = ImGui::GetCursorScreenPos();
-	dl->AddLine(ImVec2(tl.x, tl.y), ImVec2(tl.x + reg.x, tl.y), 0xffffffff);
-	tl.y += style.ItemSpacing.y;
-	tl.y += 15.0f;
-	ImGui::SetCursorScreenPos(tl);
+	ImGui::Separator();
 
 	if (ImGui::Button("Undo"))
 	{
@@ -446,6 +453,31 @@ void ScheduleViewer::OnGUI()
 		}
 	}
 
+	ImGui::Separator();
+
+	ImGui::PushItemWidth(200.0f);
+	bool checkFileExists = ImGui::InputText("Path", filePath, FILEPATH_BUF_SIZE);
+	ImGui::SameLine();
+	if (ImGui::Button("Save"))
+	{
+		jd.SaveToFile(filePath);
+	}
+	if (checkFileExists)
+	{
+		ifstream f(filePath);
+		canLoadFile = f.good();
+	}
+	if (canLoadFile)
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Load"))
+		{
+			saves.push(jd);
+			jd = JobData::LoadFromFile(filePath);
+			updateJobRun = true;
+		}
+	}
+
 	if (saves.size() > 100)
 	{
 		stack<JobData> temp;
@@ -459,6 +491,12 @@ void ScheduleViewer::OnGUI()
 			saves.push(temp.top());
 			temp.pop();
 		}
+	}
+
+	if (updateJobRun)
+	{
+		//update job run
+		jr = JobRun(jd);
 	}
 }
 

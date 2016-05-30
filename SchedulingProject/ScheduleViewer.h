@@ -39,5 +39,8 @@ private:
 
 	float** colors;
 	int colorCount;
+
+	char* filePath;
+	bool canLoadFile;
 };
 
