@@ -17,20 +17,17 @@ typedef int ValType;
 
 static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& syncPoints, int remainingSyncPoints)
 {
-	syncPoints = vector<ValType>();
-
 	bool ranOnce = false;
-	int bestSyncPoint = VAL_INF;
-	int best = INT_MAX;
-	vector<ValType> bestPoints;
+	ValType bestSyncPoint = VAL_INF;
+	ValType bestIdleTime = VAL_INF;
 	for (size_t i = 0; i < jobs.size(); i++)
 	{
 		if (jobs[i].size() > 1)
 		{
 			ranOnce = true;
-			if (!remainingSyncPoints)
+			if (remainingSyncPoints == 0)
 			{
-				return INT_MAX;
+				return VAL_INF;
 			}
 
 			ValType idleTime = VAL_ZERO;
@@ -59,26 +56,30 @@ static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& s
 			}
 
 			vector<ValType> temp;
-			idleTime += CalculateOptimal(jobs2, temp, remainingSyncPoints - 1);
-
-			if (idleTime < best)
+			ValType subIdleTime = CalculateOptimal(jobs2, temp, remainingSyncPoints - 1);
+			if (subIdleTime != VAL_INF)
 			{
-				bestSyncPoint = jobs[i].front();
-				best = idleTime;
-				bestPoints = temp;
+				idleTime += subIdleTime;
+
+				if (idleTime < bestIdleTime)
+				{
+					bestSyncPoint = jobs[i].front();
+					bestIdleTime = idleTime;
+					syncPoints = temp;
+				}
 			}
+
 		}
 	}
 
 	if (bestSyncPoint != VAL_INF)
 	{
-		for (size_t i = 0; i < bestPoints.size(); i++)
+		for (size_t i = 0; i < syncPoints.size(); i++)
 		{
-			bestPoints[i] += bestSyncPoint;
+			syncPoints[i] += bestSyncPoint;
 		}
-		bestPoints.push_back(bestSyncPoint);
-		syncPoints = bestPoints;
-		return best;
+		syncPoints.push_back(bestSyncPoint);
+		return bestIdleTime;
 	}
 	if (ranOnce)
 	{
@@ -545,12 +546,6 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 
 			dl->AddRectFilled(tlCornerJob, brCorner, ImGui::ColorConvertFloat4ToU32(col));
 
-			if (i == selectedServer && j == selectedJob)
-			{
-				//draw white border
-				dl->AddRect(tlCornerJob, brCorner, 0xffffffff);
-			}
-
 			preceedingEnd = brCorner.x;
 			colI = (colI + 1) % MAX_JOBS;
 			j++;
@@ -562,12 +557,10 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 
 	float jobChartB = tlCorner.y;
 
-	i = 0;
 	for_each(jobRun.data.syncPoints.begin(), jobRun.data.syncPoints.end(), [&](int& syncPoint) {
 
 		float horizontalPos = tl.x + (syncPoint * timeScale);
 		dl->AddLine(ImVec2(horizontalPos, tl.y), ImVec2(horizontalPos, jobChartB), 0xffffffff);
-		i++;
 	});
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), 0xffffffff);
