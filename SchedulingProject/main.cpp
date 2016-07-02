@@ -4,7 +4,7 @@
 // If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
 
 #include "imgui.h"
-#include "imgui_impl_glfw_gl3.h"
+#include "imgui_impl_glfw.h"
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -25,20 +25,11 @@ int main(int, char**)
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         return 1;
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#if __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "ImGui OpenGL3 example", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "ImGui OpenGL2 example", NULL, NULL);
     glfwMakeContextCurrent(window);
 
-	glewExperimental = GL_TRUE;
-    glewInit();
-
     // Setup ImGui binding
-    ImGui_ImplGlfwGL3_Init(window, true);
+    ImGui_ImplGlfw_Init(window, true);
 
     // Load Fonts
     // (there is a default font, this is only if you want to change it. see extra_fonts/README.txt for more details)
@@ -62,7 +53,7 @@ int main(int, char**)
     {
 
         glfwPollEvents();
-        ImGui_ImplGlfwGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
 
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -98,7 +89,7 @@ int main(int, char**)
     }
 
     // Cleanup
-    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
     glfwTerminate();
 
     return 0;

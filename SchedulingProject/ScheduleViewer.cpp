@@ -15,6 +15,13 @@ typedef int ValType;
 
 #define FILEPATH_BUF_SIZE 256
 
+#define BACKGROUND_COLOR 0xffffffff
+#define LINE_COLOR 0xff000000
+#define IDLE_COLOR 0x00cccccc
+
+static float jobWidth = 20.0f;
+static float vPadding = 5.0f;
+
 static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& syncPoints, int remainingSyncPoints)
 {
 	bool ranOnce = false;
@@ -158,9 +165,7 @@ ScheduleViewer::~ScheduleViewer()
 
 void ScheduleViewer::OnGUI()
 {
-	static float jobWidth = 20.0f;
 	static float syncPointButtonSize = 20.0f;
-	static float vPadding = 5.0f;
 	static int colorJobHover = 0xffffffff;
 
 	ImGuiIO io = ImGui::GetIO();
@@ -218,10 +223,12 @@ void ScheduleViewer::OnGUI()
 
 	stringstream ss;
 
+	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (vPadding * (1 + serverCount)) + (jobWidth * serverCount)), BACKGROUND_COLOR);
+
 	int i = 0;
 	for_each(jr.data.jobs.begin(), jr.data.jobs.end(), [&](vector<int>& jobs) {
 
-		tlCorner.x = tl.x;
+		tlCorner.x = tl.x + vPadding;
 		/*ss.str(string());
 		ss << i;
 		dl->AddText(tlCorner, 0xffffffff, ss.str().c_str());
@@ -246,7 +253,7 @@ void ScheduleViewer::OnGUI()
 			if (j < jr.lastJob[i])
 			{
 				//draw idle time before this job
-				dl->AddRectFilled(ImVec2(preceedingEnd, tlCornerJob.y), ImVec2(tlCornerJob.x, brCorner.y), 0xffcccccc);
+				dl->AddRectFilled(ImVec2(preceedingEnd, tlCornerJob.y), ImVec2(tlCornerJob.x, brCorner.y), IDLE_COLOR);
 			}
 			else
 			{
@@ -336,11 +343,11 @@ void ScheduleViewer::OnGUI()
 		}
 
 		float horizontalPos = tl.x + (syncPoint * timeScale);
-		dl->AddLine(ImVec2(horizontalPos, tl.y), ImVec2(horizontalPos, br.y), 0xffffffff);
+		dl->AddLine(ImVec2(horizontalPos, tl.y), ImVec2(horizontalPos, br.y), LINE_COLOR);
 		i++;
 	});
 
-	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), 0xffffffff);
+	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 
 	ImGui::PushItemWidth(110.0f);
 	ImGui::SetCursorScreenPos(tl);
@@ -501,8 +508,6 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 	ImVec2 reg = ImGui::GetContentRegionAvail();
 	ImDrawList* dl = ImGui::GetWindowDrawList();
 
-	static float jobWidth = 20.0f;
-	static float vPadding = 5.0f;
 	float timeScale = reg.x / 5.0f / 100000.0f;
 
 	ImVec2 tl = ImGui::GetCursorScreenPos();
@@ -510,10 +515,12 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 
 	tlCorner.y += vPadding;
 
+	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (vPadding * (1 + serverCount)) + (jobWidth * serverCount)), BACKGROUND_COLOR);
+
 	int i = 0;
 	for_each(jobRun.data.jobs.begin(), jobRun.data.jobs.end(), [&](vector<int>& jobs) {
 
-		tlCorner.x = tl.x;
+		tlCorner.x = tl.x + vPadding;
 
 		int j = 0;
 		int colI = 0;
@@ -535,7 +542,7 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 			if (j < jobRun.lastJob[i])
 			{
 				//draw idle time before this job
-				dl->AddRectFilled(ImVec2(preceedingEnd, tlCornerJob.y), ImVec2(tlCornerJob.x, brCorner.y), 0xffcccccc);
+				dl->AddRectFilled(ImVec2(preceedingEnd, tlCornerJob.y), ImVec2(tlCornerJob.x, brCorner.y), IDLE_COLOR);
 			}
 			else
 			{
@@ -560,9 +567,9 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 	for_each(jobRun.data.syncPoints.begin(), jobRun.data.syncPoints.end(), [&](int& syncPoint) {
 
 		float horizontalPos = tl.x + (syncPoint * timeScale);
-		dl->AddLine(ImVec2(horizontalPos, tl.y), ImVec2(horizontalPos, jobChartB), 0xffffffff);
+		dl->AddLine(ImVec2(horizontalPos, tl.y), ImVec2(horizontalPos, jobChartB), LINE_COLOR);
 	});
 
-	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), 0xffffffff);
+	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 	ImGui::InvisibleButton("Background", ImVec2(reg.x, tlCorner.y - tl.y));
 }

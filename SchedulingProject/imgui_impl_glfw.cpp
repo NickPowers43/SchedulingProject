@@ -1,5 +1,5 @@
-#include "stdafx.h"
 
+#include "stdafx.h"
 // ImGui GLFW binding with OpenGL
 // In this binding, ImTextureID is used to store an OpenGL 'GLuint' texture identifier. Read the FAQ about ImTextureID in imgui.cpp.
 
