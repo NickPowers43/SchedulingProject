@@ -21,7 +21,7 @@ typedef int ValType;
 
 static float UIScale = 1.0f;
 static float jobWidth = 20.0f * UIScale;
-static float borderPadding = 80.0f * UIScale;
+static float borderPadding = 40.0f * UIScale;
 static float jobSpacing = 5.0f * UIScale;
 static float syncLineThickness = 2.0f * UIScale;
 static float syncLineRunoff = 15.0f * UIScale;
@@ -146,12 +146,32 @@ ScheduleViewer::ScheduleViewer()
 	jobCount = jd.jobs[0].size();
 	syncPointCount = syncPoints.size();
 
+	int hues[16] = {
+		0,
+		164,
+		21,
+		87,
+		212,
+		56,
+		32,
+		130,
+		142,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0
+	};
+
 	colors = new float*[MAX_JOBS];
 	for (size_t i = 0; i < MAX_JOBS; i++)
 	{
-		ImColor col = ImColor::HSV(i / (float)MAX_JOBS, 0.7f, 0.7f);
-		colors[i] = new float[3];
+		ImColor col = ImColor::HSV(255.0f / hues[i], 195.0f / 255.0f, 195.0f / 255.0f);
 		ImVec4 comps = col;
+
+		colors[i] = new float[3];
 		colors[i][0] = comps.x;
 		colors[i][1] = comps.y;
 		colors[i][2] = comps.z;
