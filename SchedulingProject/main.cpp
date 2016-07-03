@@ -27,7 +27,7 @@ int main(int, char**)
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         return 1;
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "ImGui OpenGL2 example", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Schedule Simulator", NULL, NULL);
     glfwMakeContextCurrent(window);
 
     // Setup ImGui binding

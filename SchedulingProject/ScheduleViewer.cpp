@@ -16,7 +16,7 @@ typedef int ValType;
 #define FILEPATH_BUF_SIZE 256
 
 #define BACKGROUND_COLOR 0xffffffff
-#define LINE_COLOR 0xff000000
+#define LINE_COLOR 0xff333333
 #define IDLE_COLOR 0x00cccccc
 
 static float UIScale = 1.0f;
@@ -24,7 +24,7 @@ static float jobWidth = 20.0f * UIScale;
 static float borderPadding = 80.0f * UIScale;
 static float jobSpacing = 5.0f * UIScale;
 static float syncLineThickness = 2.0f * UIScale;
-static float syncLineRunoff = 30.0f * UIScale;
+static float syncLineRunoff = 15.0f * UIScale;
 
 static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& syncPoints, int remainingSyncPoints)
 {
@@ -305,6 +305,8 @@ void ScheduleViewer::OnGUI()
 
 	br.y = tlCorner.y;
 
+	float horizontalPos = tl.x + borderPadding;
+	dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 	i = 0;
 	for_each(jd.syncPoints.begin(), jd.syncPoints.end(), [&](int& syncPoint) {
 
@@ -352,7 +354,7 @@ void ScheduleViewer::OnGUI()
 			}
 		}
 
-		float horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
+		horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
 		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 		i++;
 	});
@@ -580,9 +582,11 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 
 	float jobChartB = tlCorner.y;
 
+	float horizontalPos = tl.x + borderPadding;
+	dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 	for_each(jobRun.data.syncPoints.begin(), jobRun.data.syncPoints.end(), [&](int& syncPoint) {
 
-		float horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
+		horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
 		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 	});
 
