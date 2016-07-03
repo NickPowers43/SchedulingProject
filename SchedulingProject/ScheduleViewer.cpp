@@ -19,7 +19,7 @@ typedef int ValType;
 #define LINE_COLOR 0xff000000
 #define IDLE_COLOR 0x00cccccc
 
-static float UIScale = 2.0f;
+static float UIScale = 1.0f;
 static float jobWidth = 20.0f * UIScale;
 static float borderPadding = 80.0f * UIScale;
 static float jobSpacing = 5.0f * UIScale;
