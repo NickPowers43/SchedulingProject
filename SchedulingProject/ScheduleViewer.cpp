@@ -19,8 +19,12 @@ typedef int ValType;
 #define LINE_COLOR 0xff000000
 #define IDLE_COLOR 0x00cccccc
 
-static float jobWidth = 20.0f;
-static float vPadding = 5.0f;
+static float UIScale = 2.0f;
+static float jobWidth = 20.0f * UIScale;
+static float borderPadding = 80.0f * UIScale;
+static float jobSpacing = 5.0f * UIScale;
+static float syncLineThickness = 2.0f * UIScale;
+static float syncLineRunoff = 30.0f * UIScale;
 
 static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& syncPoints, int remainingSyncPoints)
 {
@@ -217,18 +221,19 @@ void ScheduleViewer::OnGUI()
 	ImVec2 br(tl.x + reg.x, tl.y + reg.x);
 	ImVec2 tlCorner(tl);
 
-	float timeScale = reg.x / 5.0f / 100000.0f;
+	float timeScale = reg.x * UIScale / 5.0f / 100000.0f;
 
-	tlCorner.y += vPadding;
 
 	stringstream ss;
 
-	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (vPadding * (1 + serverCount)) + (jobWidth * serverCount)), BACKGROUND_COLOR);
+	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (serverCount - 1)) + (jobWidth * serverCount)), BACKGROUND_COLOR);
 
+	tlCorner.y += borderPadding;
+	float jobChartTop = tlCorner.y;
 	int i = 0;
 	for_each(jr.data.jobs.begin(), jr.data.jobs.end(), [&](vector<int>& jobs) {
 
-		tlCorner.x = tl.x + vPadding;
+		tlCorner.x = tl.x + borderPadding;
 		/*ss.str(string());
 		ss << i;
 		dl->AddText(tlCorner, 0xffffffff, ss.str().c_str());
@@ -289,9 +294,14 @@ void ScheduleViewer::OnGUI()
 			j++;
 		});
 		tlCorner.y += jobWidth;
-		tlCorner.y += vPadding;
+		if (i < jr.data.jobs.size() - 1)
+		{
+			tlCorner.y += jobSpacing;
+		}
 		i++;
 	});
+	float jobChartBottom = tlCorner.y;
+	tlCorner.y += borderPadding;
 
 	br.y = tlCorner.y;
 
@@ -304,7 +314,7 @@ void ScheduleViewer::OnGUI()
 			{
 				if ((io.MousePos.y > tl.y && io.MousePos.y < br.y) && (io.MousePos.x > tl.x && io.MousePos.x < br.x))
 				{
-					float dist = io.MousePos.x - (tl.x + (syncPoint * timeScale));
+					float dist = io.MousePos.x - (tl.x + borderPadding + (syncPoint * timeScale));
 					if (dist < 0.0f)
 						dist = -dist;
 					if (dist <= 4.0f)
@@ -342,8 +352,8 @@ void ScheduleViewer::OnGUI()
 			}
 		}
 
-		float horizontalPos = tl.x + (syncPoint * timeScale);
-		dl->AddLine(ImVec2(horizontalPos, tl.y), ImVec2(horizontalPos, br.y), LINE_COLOR);
+		float horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
+		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 		i++;
 	});
 
@@ -508,19 +518,20 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 	ImVec2 reg = ImGui::GetContentRegionAvail();
 	ImDrawList* dl = ImGui::GetWindowDrawList();
 
-	float timeScale = reg.x / 5.0f / 100000.0f;
+	float timeScale = reg.x * UIScale / 5.0f / 100000.0f;
 
 	ImVec2 tl = ImGui::GetCursorScreenPos();
 	ImVec2 tlCorner(tl);
 
-	tlCorner.y += vPadding;
 
-	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (vPadding * (1 + serverCount)) + (jobWidth * serverCount)), BACKGROUND_COLOR);
+	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (serverCount - 1)) + (jobWidth * serverCount)), BACKGROUND_COLOR);
 
+	tlCorner.y += borderPadding;
+	float jobChartTop = tlCorner.y;
 	int i = 0;
 	for_each(jobRun.data.jobs.begin(), jobRun.data.jobs.end(), [&](vector<int>& jobs) {
 
-		tlCorner.x = tl.x + vPadding;
+		tlCorner.x = tl.x + borderPadding;
 
 		int j = 0;
 		int colI = 0;
@@ -558,16 +569,21 @@ void ScheduleViewer::DrawJobRun(JobRun & jobRun)
 			j++;
 		});
 		tlCorner.y += jobWidth;
-		tlCorner.y += vPadding;
+		if (i < jobRun.data.jobs.size() - 1)
+		{
+			tlCorner.y += jobSpacing;
+		}
 		i++;
 	});
+	float jobChartBottom = tlCorner.y;
+	tlCorner.y += borderPadding;
 
 	float jobChartB = tlCorner.y;
 
 	for_each(jobRun.data.syncPoints.begin(), jobRun.data.syncPoints.end(), [&](int& syncPoint) {
 
-		float horizontalPos = tl.x + (syncPoint * timeScale);
-		dl->AddLine(ImVec2(horizontalPos, tl.y), ImVec2(horizontalPos, jobChartB), LINE_COLOR);
+		float horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
+		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 	});
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);

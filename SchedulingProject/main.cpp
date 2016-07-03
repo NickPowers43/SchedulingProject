@@ -19,8 +19,10 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
+
 int main(int, char**)
 {
+
     // Setup window
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
@@ -47,6 +49,7 @@ int main(int, char**)
 
 	ScheduleViewer sv;
 	ScheduleViewer sv2;
+
 
     // Main loop
     while (!glfwWindowShouldClose(window))
