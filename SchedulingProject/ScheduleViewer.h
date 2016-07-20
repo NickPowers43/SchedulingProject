@@ -26,6 +26,7 @@ private:
 	JobData jd;
 	JobRun jr;
 	JobRun* snapshot;
+	long finiteCases;
 
 	int selectedServer;
 	int selectedJob;

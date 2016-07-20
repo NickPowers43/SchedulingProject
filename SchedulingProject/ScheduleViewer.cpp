@@ -102,6 +102,56 @@ static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& s
 	}
 
 }
+static void FiniteCasesAux(vector<vector<ValType>> jobs, int remainingSyncPoints, long & count)
+{
+	bool ranOnce = false;
+	for (size_t i = 0; i < jobs.size(); i++)
+	{
+		if (jobs[i].size() > 1)
+		{
+			ranOnce = true;
+			if (remainingSyncPoints == 0)
+			{
+				return;
+			}
+
+			vector<vector<ValType>> jobs2;
+			for (size_t j = 0; j < jobs.size(); j++)
+			{
+				if (jobs[j].size() > 1)
+				{
+					jobs2.push_back(vector<ValType>());
+					if (j != i)
+					{
+						if (jobs[j].front() > jobs[i].front())
+						{
+							jobs2.back().push_back(jobs[j].front() - jobs[i].front());
+						}
+					}
+					for (size_t k = 1; k < jobs[j].size(); k++)
+					{
+						jobs2.back().push_back(jobs[j][k]);
+					}
+				}
+			}
+
+			FiniteCasesAux(jobs2, remainingSyncPoints - 1, count);
+		}
+	}
+
+	if (!ranOnce && (remainingSyncPoints == 0))
+	{
+		count++;
+	}
+}
+static size_t FiniteCases(vector<vector<ValType>> jobs, int remainingSyncPoints)
+{
+	long temp = 0;
+
+	FiniteCasesAux(jobs, remainingSyncPoints, temp);
+
+	return temp;
+}
 
 ScheduleViewer::ScheduleViewer()
 {
@@ -180,6 +230,8 @@ ScheduleViewer::ScheduleViewer()
 	colorCount = MAX_JOBS;
 
 	snapshot = NULL;
+
+	finiteCases = 0;
 }
 
 
@@ -389,6 +441,10 @@ void ScheduleViewer::OnGUI()
 	ss << (jr.idleTime * 0.0001f);
 	ImGui::LabelText(ss.str().c_str(), "Idle time");
 
+	ss.str(string());
+	ss << finiteCases;
+	ImGui::LabelText(ss.str().c_str(), "Finite Cases");
+
 	float jobTime = (float)*selectedJobPtr / 10000.0f;
 	updateJobRun |= ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f);
 	*selectedJobPtr = jobTime * 10000.0f;
@@ -532,6 +588,7 @@ void ScheduleViewer::OnGUI()
 	{
 		//update job run
 		jr = JobRun(jd);
+		finiteCases = FiniteCases(jd.jobs, jd.syncPoints.size());
 	}
 }
 
