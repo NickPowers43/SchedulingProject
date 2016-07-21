@@ -11,6 +11,7 @@
 #include "JobData.h"
 #include "JobRun.h"
 #include "ScheduleViewer.h"
+#include <Windows.h>
 
 using namespace std;
 
@@ -19,6 +20,8 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
+double currentFrame;
+double lastFrame;
 
 int main(int, char**)
 {
@@ -50,6 +53,7 @@ int main(int, char**)
 	ScheduleViewer sv;
 	ScheduleViewer sv2;
 
+	lastFrame = glfwGetTime();
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -89,6 +93,21 @@ int main(int, char**)
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui::Render();
         glfwSwapBuffers(window);
+
+		currentFrame = glfwGetTime();
+		double deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		double sleepTime = (1.0 / 30.0) - deltaTime;
+		if (sleepTime > 0.0)
+		{
+			unsigned long ms = sleepTime * 1000;
+			if (ms > 0)
+			{
+				Sleep(ms);
+			}
+		}
+
     }
 
     // Cleanup

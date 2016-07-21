@@ -9,7 +9,6 @@
 
 using namespace std;
 
-typedef int ValType;
 #define VAL_ZERO 0
 #define VAL_INF INT_MAX
 
@@ -102,12 +101,19 @@ static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& s
 	}
 
 }
+bool CompareFirstElements(vector<ValType> & a, vector<ValType> & b)
+{
+	return a.front() < b.front();
+}
 static void FiniteCasesAux(vector<vector<ValType>> jobs, int remainingSyncPoints, long & count)
 {
+	sort(jobs.begin(), jobs.end(), CompareFirstElements);
+
 	bool ranOnce = false;
 	for (size_t i = 0; i < jobs.size(); i++)
 	{
-		if (jobs[i].size() > 1)
+		bool skip = (i > 0) ? jobs[i].front() == jobs[i-1].front() : false;
+		if (jobs[i].size() > 1 && !skip)
 		{
 			ranOnce = true;
 			if (remainingSyncPoints == 0)
@@ -115,6 +121,9 @@ static void FiniteCasesAux(vector<vector<ValType>> jobs, int remainingSyncPoints
 				return;
 			}
 
+			//in this context we have chosen the end of the ith job to place
+			//a syncronization point. we now slice the jobs to create a
+			//sub-problem to solve.
 			vector<vector<ValType>> jobs2;
 			for (size_t j = 0; j < jobs.size(); j++)
 			{
@@ -445,9 +454,9 @@ void ScheduleViewer::OnGUI()
 	ss << finiteCases;
 	ImGui::LabelText(ss.str().c_str(), "Finite Cases");
 
-	float jobTime = (float)*selectedJobPtr / 10000.0f;
+	float jobTime = floorf((float)*selectedJobPtr) / 10000;
 	updateJobRun |= ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f);
-	*selectedJobPtr = jobTime * 10000.0f;
+	*selectedJobPtr = jobTime * 10000;
 
 	ImGui::SameLine();
 	if (ImGui::InputInt("Sync Points", &syncPointCount))
@@ -508,6 +517,10 @@ void ScheduleViewer::OnGUI()
 		jd.syncPoints = temp;
 		syncPointCount = jd.syncPoints.size();
 		updateJobRun = true;
+	}
+	if (ImGui::Button("Calculate finite idletime cases"))
+	{
+		finiteCases = FiniteCases(jd.jobs, jd.syncPoints.size());
 	}
 	ImGui::PopStyleColor(3);
 
@@ -577,6 +590,10 @@ void ScheduleViewer::OnGUI()
 			temp.push(saves.top());
 			saves.pop();
 		}
+		while (saves.size() > 0)
+		{
+			saves.pop();
+		}
 		while (temp.size())
 		{
 			saves.push(temp.top());
@@ -588,7 +605,7 @@ void ScheduleViewer::OnGUI()
 	{
 		//update job run
 		jr = JobRun(jd);
-		finiteCases = FiniteCases(jd.jobs, jd.syncPoints.size());
+		finiteCases = -1;
 	}
 }
 

@@ -17,7 +17,7 @@ JobData::JobData(const JobData & jd) : jobs(jd.jobs), syncPoints(jd.syncPoints)
 {
 
 }
-JobData::JobData(vector<vector<int>> jobs, vector<int> syncPoints) : jobs(jobs), syncPoints(syncPoints)
+JobData::JobData(vector<vector<ValType>> jobs, vector<ValType> syncPoints) : jobs(jobs), syncPoints(syncPoints)
 {
 }
 
@@ -52,10 +52,10 @@ JobData JobData::LoadFromFile(string filePath)
 	getline(ifs, line);
 	int jobCount = stoi(line);
 
-	vector<vector<int>> jobs;
+	vector<vector<ValType>> jobs;
 	for (size_t i = 0; i < serverCount; i++)
 	{
-		jobs.push_back(vector<int>());
+		jobs.push_back(vector<ValType>());
 		for (size_t j = 0; j < jobCount; j++)
 		{
 			getline(ifs, line);

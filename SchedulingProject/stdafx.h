@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <tchar.h>
 
+typedef int ValType;
 
 
 // TODO: reference additional headers your program requires here

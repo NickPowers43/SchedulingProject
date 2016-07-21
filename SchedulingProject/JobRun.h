@@ -10,13 +10,11 @@ public:
 	~JobRun();
 
 	void Simulate();
-	float IdleTime();
-
 
 	JobData data;
-	vector<vector<int>> jobStarts;
-	vector<int> lastJob;
+	vector<vector<ValType>> jobStarts;
+	vector<ValType> lastJob;
 
-	int idleTime;
+	ValType idleTime;
 };
 
