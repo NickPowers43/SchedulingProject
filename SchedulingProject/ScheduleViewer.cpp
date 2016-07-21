@@ -450,9 +450,11 @@ void ScheduleViewer::OnGUI()
 	ss << (jr.idleTime * 0.0001f);
 	ImGui::LabelText(ss.str().c_str(), "Idle time");
 
+	ImGui::SameLine();
+
 	ss.str(string());
 	ss << finiteCases;
-	ImGui::LabelText(ss.str().c_str(), "Finite Cases");
+	ImGui::LabelText(ss.str().c_str(), "   Finite Cases");
 
 	float jobTime = floorf((float)*selectedJobPtr) / 10000;
 	updateJobRun |= ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f);
