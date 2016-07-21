@@ -518,6 +518,12 @@ void ScheduleViewer::OnGUI()
 		syncPointCount = jd.syncPoints.size();
 		updateJobRun = true;
 	}
+	ImGui::PopStyleColor(3);
+
+	ImGui::SameLine();
+	ImGui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(5 / 7.0f, 0.6f, 0.6f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(5 / 7.0f, 0.7f, 0.7f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(5 / 7.0f, 0.8f, 0.8f));
 	if (ImGui::Button("Calculate finite idletime cases"))
 	{
 		finiteCases = FiniteCases(jd.jobs, jd.syncPoints.size());
