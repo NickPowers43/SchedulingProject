@@ -11,6 +11,7 @@ public:
 	}
 	bool Compare(K key, V val)
 	{
+		if (key < Min::key)
 		{
 			Min::key = key;
 			Min::val = val;
