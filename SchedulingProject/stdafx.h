@@ -12,5 +12,12 @@
 
 typedef int ValType;
 
+#define VAL_ZERO 0
+#define VAL_INF INT_MAX
+
+struct UserSettings
+{
+	bool includeRedundantSyncPoints;
+};
 
 // TODO: reference additional headers your program requires here

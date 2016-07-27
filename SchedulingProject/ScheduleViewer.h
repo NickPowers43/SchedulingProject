@@ -28,6 +28,8 @@ private:
 	JobRun* snapshot;
 	long finiteCases;
 
+	UserSettings settings;
+
 	int selectedServer;
 	int selectedJob;
 

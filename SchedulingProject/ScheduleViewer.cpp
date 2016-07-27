@@ -9,9 +9,6 @@
 
 using namespace std;
 
-#define VAL_ZERO 0
-#define VAL_INF INT_MAX
-
 #define FILEPATH_BUF_SIZE 256
 
 #define BACKGROUND_COLOR 0xffffffff
@@ -241,6 +238,8 @@ ScheduleViewer::ScheduleViewer()
 	snapshot = NULL;
 
 	finiteCases = 0;
+
+	settings.includeRedundantSyncPoints = false;
 }
 
 
