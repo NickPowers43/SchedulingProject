@@ -14,6 +14,7 @@ public:
 	~JobData();
 
 	void SaveToFile(string filePath);
+	void MinimizeIdletime();
 	static JobData LoadFromFile(string filePath);
 
 	vector<vector<ValType>> jobs;

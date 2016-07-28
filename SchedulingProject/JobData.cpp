@@ -8,6 +8,8 @@
 #include <fstream>
 #include <string>
 
+#include "Min.h"
+
 using namespace std;
 
 JobData::JobData()
@@ -40,6 +42,39 @@ void JobData::SaveToFile(string filePath)
 	for (size_t i = 0; i < syncPoints.size(); i++)
 	{
 		ofs << syncPoints[i] << endl;
+	}
+}
+
+
+void MinIdletimeAux(vector<bool> crossing, vector<vector<ValType>> jobs, vector<ValType> & syncPoints)
+{
+	for (size_t i = 0; i < jobs.size(); i++)
+	{
+
+	}
+}
+void MinIdletimeSection(vector<vector<ValType>> jobs, vector<ValType> & syncPoints)
+{
+	Min<ValType, vector<ValType>> minConfig(VAL_ZERO, syncPoints);
+
+	for (size_t sectionI = 0; sectionI < jobs[0].size(); sectionI++)
+	{
+		ValType initialIdletime;
+
+	}
+}
+void MinIdletime(vector<vector<ValType>> jobs, vector<ValType> & syncPoints)
+{
+}
+void JobData::MinimizeIdletime()
+{
+	if (syncPoints.size() == jobs[0].size())
+	{
+		
+	}
+	else
+	{
+
 	}
 }
 JobData JobData::LoadFromFile(string filePath)

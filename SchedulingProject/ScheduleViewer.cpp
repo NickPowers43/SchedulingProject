@@ -6,6 +6,10 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <map>
+
+#include "OneExtraIdleReducer.h"
+#include "BruteIdleReducer.h"
 
 using namespace std;
 
@@ -22,82 +26,6 @@ static float jobSpacing = 5.0f * UIScale;
 static float syncLineThickness = 2.0f * UIScale;
 static float syncLineRunoff = 15.0f * UIScale;
 
-static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& syncPoints, int remainingSyncPoints)
-{
-	bool ranOnce = false;
-	ValType bestSyncPoint = VAL_INF;
-	ValType bestIdleTime = VAL_INF;
-	for (size_t i = 0; i < jobs.size(); i++)
-	{
-		if (jobs[i].size() > 1)
-		{
-			ranOnce = true;
-			if (remainingSyncPoints == 0)
-			{
-				return VAL_INF;
-			}
-
-			ValType idleTime = VAL_ZERO;
-			vector<vector<ValType>> jobs2;
-			for (size_t j = 0; j < jobs.size(); j++)
-			{
-				if (jobs[j].size() > 1)
-				{
-					jobs2.push_back(vector<ValType>());
-					if (j != i)
-					{
-						if (jobs[j].front() > jobs[i].front())
-						{
-							jobs2.back().push_back(jobs[j].front() - jobs[i].front());
-						}
-						else
-						{
-							idleTime += jobs[i].front() - jobs[j].front();
-						}
-					}
-					for (size_t k = 1; k < jobs[j].size(); k++)
-					{
-						jobs2.back().push_back(jobs[j][k]);
-					}
-				}
-			}
-
-			vector<ValType> temp;
-			ValType subIdleTime = CalculateOptimal(jobs2, temp, remainingSyncPoints - 1);
-			if (subIdleTime != VAL_INF)
-			{
-				idleTime += subIdleTime;
-
-				if (idleTime < bestIdleTime)
-				{
-					bestSyncPoint = jobs[i].front();
-					bestIdleTime = idleTime;
-					syncPoints = temp;
-				}
-			}
-
-		}
-	}
-
-	if (bestSyncPoint != VAL_INF)
-	{
-		for (size_t i = 0; i < syncPoints.size(); i++)
-		{
-			syncPoints[i] += bestSyncPoint;
-		}
-		syncPoints.push_back(bestSyncPoint);
-		return bestIdleTime;
-	}
-	if (ranOnce)
-	{
-		return VAL_INF;
-	}
-	else
-	{
-		return VAL_ZERO;
-	}
-
-}
 bool CompareFirstElements(vector<ValType> & a, vector<ValType> & b)
 {
 	return a.front() < b.front();
@@ -158,6 +86,14 @@ static size_t FiniteCases(vector<vector<ValType>> jobs, int remainingSyncPoints)
 
 	return temp;
 }
+
+#define REDUCER_BRUTE 0
+#define REDUCER_ONE_EXTRA 1
+
+map<int, IdleReducer*> reducers = {
+	{ REDUCER_BRUTE, static_cast<IdleReducer*>(new BruteIdleReducer()) },
+	{ REDUCER_ONE_EXTRA, static_cast<IdleReducer*>(new OneExtraIdleReducer()) }
+};
 
 ScheduleViewer::ScheduleViewer()
 {
@@ -240,6 +176,7 @@ ScheduleViewer::ScheduleViewer()
 	finiteCases = 0;
 
 	settings.includeRedundantSyncPoints = false;
+	reducerPreference = REDUCER_BRUTE;
 }
 
 
@@ -392,38 +329,38 @@ void ScheduleViewer::OnGUI()
 
 		if (io.MouseDown[0])
 		{
-			if (selectedSyncPoint < 0)
-			{
-				if ((io.MousePos.y > tl.y && io.MousePos.y < br.y) && (io.MousePos.x > tl.x && io.MousePos.x < br.x))
-				{
-					float dist = io.MousePos.x - (tl.x + borderPadding + (syncPoint * timeScale));
-					if (dist < 0.0f)
-						dist = -dist;
-					if (dist <= 4.0f)
-					{
-						saves.push(jd);
-						selectedSyncPoint = i;
-					}
-				}
-			}
-			else if (selectedSyncPoint == i)
-			{
-				syncPoint += io.MouseDelta.x / timeScale;
-				updateJobRun = true;
+if (selectedSyncPoint < 0)
+{
+	if ((io.MousePos.y > tl.y && io.MousePos.y < br.y) && (io.MousePos.x > tl.x && io.MousePos.x < br.x))
+	{
+		float dist = io.MousePos.x - (tl.x + borderPadding + (syncPoint * timeScale));
+		if (dist < 0.0f)
+			dist = -dist;
+		if (dist <= 4.0f)
+		{
+			saves.push(jd);
+			selectedSyncPoint = i;
+		}
+	}
+}
+else if (selectedSyncPoint == i)
+{
+	syncPoint += io.MouseDelta.x / timeScale;
+	updateJobRun = true;
 
-				for (size_t j = 0; j < jd.syncPoints.size(); j++)
-				{
-					if (i != j)
-					{
-						if (jd.syncPoints[j] > jd.syncPoints[i])
-						{
-							float temp2 = jd.syncPoints[i];
-							jd.syncPoints[i] = jd.syncPoints[j];
-							jd.syncPoints[i] = temp2;
-						}
-					}
-				}
+	for (size_t j = 0; j < jd.syncPoints.size(); j++)
+	{
+		if (i != j)
+		{
+			if (jd.syncPoints[j] > jd.syncPoints[i])
+			{
+				float temp2 = jd.syncPoints[i];
+				jd.syncPoints[i] = jd.syncPoints[j];
+				jd.syncPoints[i] = temp2;
 			}
+		}
+	}
+}
 		}
 		else
 		{
@@ -489,7 +426,20 @@ void ScheduleViewer::OnGUI()
 
 	ImGui::ColorEdit3("Job color", colors[selectedJob]);
 
-	ImGui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(4 / 7.0f, 0.6f, 0.6f));
+	ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE);
+	ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA);
+
+	if (ImGui::Button("Reduce"))
+	{
+		saves.push(jd);
+		updateJobRun = true;
+
+		ReduceResults results = reducers[reducerPreference]->Reduce(jd.jobs, jd.syncPoints.size());
+		jd.syncPoints = results.syncPoints;
+		syncPointCount = jd.syncPoints.size();
+	}
+
+	/*ImGui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(4 / 7.0f, 0.6f, 0.6f));
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(4 / 7.0f, 0.7f, 0.7f));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(4 / 7.0f, 0.8f, 0.8f));
 	if (ImGui::Button("Minimize idle time at all costs"))
@@ -533,7 +483,7 @@ void ScheduleViewer::OnGUI()
 
 	ImGui::PopItemWidth();
 
-	ImGui::Separator();
+	ImGui::Separator();*/
 
 	if (ImGui::Button("Undo"))
 	{

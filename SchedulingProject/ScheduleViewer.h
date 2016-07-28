@@ -29,6 +29,7 @@ private:
 	long finiteCases;
 
 	UserSettings settings;
+	int reducerPreference;
 
 	int selectedServer;
 	int selectedJob;

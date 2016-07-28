@@ -63,6 +63,9 @@
     <ClInclude Include="OneExtraIdleReducer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BruteIdleReducer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OneExtraIdleReducer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BruteIdleReducer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

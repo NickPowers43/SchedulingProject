@@ -7,9 +7,9 @@ class Min
 public:
 	Min(K key, V val)
 	{
-		Max::val = val;
+		Min::val = val;
 	}
-	bool Compare(K key, V val)
+	bool Compare(K key, V & val)
 	{
 		if (key < Min::key)
 		{
@@ -23,7 +23,6 @@ public:
 		}
 	}
 
-private:
 	V val;
 	K key;
 };
