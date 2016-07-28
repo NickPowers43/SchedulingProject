@@ -135,7 +135,7 @@ vector<ServerRecord> ClipSchedule(vector<ServerRecord> & servers, ValType cutTim
 			}
 			else
 			{
-				if (servers[i].jobs.size() > 1)
+				if (servers[i].jobs.size() > 2)
 				{
 					output.push_back(ServerRecord());
 					for (size_t j = 1; j < servers[i].jobs.size(); j++)
@@ -183,6 +183,20 @@ ReduceResults ReduceAdjust(vector<ServerRecord> servers)
 		ValType syncPoint = servers[i].jobs[0];
 		vector<ServerRecord> subServers = ClipSchedule(servers, syncPoint);
 		ReduceResults subResult = ReduceAdjust(subServers);
+
+		ValType idleTime = syncPoint * (servers.size() - i - 1);
+		for (size_t j = i + 1; j < servers.size(); j++)
+		{
+			if (servers[j].firstJobStarted)
+			{
+				idleTime -= servers[j].jobs[0];
+			}
+			else
+			{
+				break;
+			}
+		}
+		subResult.idleTime += idleTime;
 
 		//sort
 		if (subResult.idleTime < minResult.idletime)
