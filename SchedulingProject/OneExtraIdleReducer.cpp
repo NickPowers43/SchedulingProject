@@ -159,7 +159,7 @@ vector<ServerRecord> ClipSchedule(vector<ServerRecord> & servers, ValType cutTim
 	return output;
 }
 
-ReduceResults ReduceAdjust(vector<ServerRecord> servers)
+ReduceResults ReduceAdjust(vector<ServerRecord> & servers)
 {
 	std::sort(servers.begin(), servers.end(), SortDescendingByFirstEndPoint);
 
@@ -247,6 +247,18 @@ ReduceResults OneExtraIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t s
 
 	for (size_t i = 0; i < (jobs[0].size() - 1); i++)
 	{
+		ReduceResults subResult = ReduceAdjust(servers);
+		subResult.idleTime += preIdleTime;
+
+		//sort
+		if (minTotalIdletime > subResult.idleTime)
+		{
+			minTotalIdletime = subResult.idleTime;
+			minTotalResult = subResult;
+			minPreSyncPoints = syncPoints;
+		}
+		//
+
 		std::sort(servers.begin(), servers.end(), SortDescendingByFirstEndPoint);
 
 		ValType tSectionIdletime = VAL_ZERO;
@@ -254,47 +266,10 @@ ReduceResults OneExtraIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t s
 		{
 			tSectionIdletime += servers[0].jobs[0] - servers[j].jobs[0];
 		}
-		ValType originalTIdletime = tSectionIdletime;
-
-		//sorting variables
-		ValType minIdleTime = VAL_INF;			//key
-		ReduceResults minResult;				//value
-		ValType minSyncPoint;					//value
-		//
-
-		for (size_t j = 1; j < servers.size(); j++)
-		{
-			if (j > 0)
-			{
-				tSectionIdletime -= (servers[j-1].jobs[0] - servers[j].jobs[0]) * (servers.size() - j);
-			}
-
-			//cut schedule at sync point at the end point of the first job of the ith server
-			ValType syncPoint = servers[j].jobs[0];
-			vector<ServerRecord> subServers = ClipSchedule(servers, syncPoint);
-			ReduceResults subResult = ReduceAdjust(subServers);
-
-			//sort
-			if (minIdleTime > subResult.idleTime)
-			{
-				minIdleTime = subResult.idleTime;
-				minResult = subResult;
-				minSyncPoint = syncPoint;
-			}
-			//
-		}
-		minResult.idleTime += preIdleTime;
-
-		//global sort
-		if (minTotalIdletime > minResult.idleTime)
-		{
-			minTotalResult = minResult;
-			minPreSyncPoints = syncPoints;
-		}
-		//
+		//ValType originalTIdletime = tSectionIdletime;
 
 		//advance the past variables
-		preIdleTime += originalTIdletime;
+		preIdleTime += tSectionIdletime;
 		sectionBeginTime += servers[0].jobs[0];
 		syncPoints.push_back(((syncPoints.size()) ? syncPoints.back() : VAL_ZERO) + servers[0].jobs[0]);
 		//
