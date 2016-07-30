@@ -26,6 +26,7 @@ ReduceWindow::ReduceWindow()
 	reducerPreference = REDUCER_BRUTE;
 
 	finiteCases = -1;
+	totalCases = -1;
 
 	idleTime = VAL_ZERO;
 
@@ -49,7 +50,7 @@ void ExportCSV(char* filePath, vector<ValType> values)
 
 	for (size_t i = 0; i < values.size(); i++)
 	{
-		ofs << values[i] << endl;
+		ofs << (values[i]  / (float)VAL_DEF) << endl;
 	}
 
 }
@@ -71,6 +72,10 @@ void ReduceWindow::OnGUI(JobData & jd)
 	ss << finiteCases;
 	ImGui::LabelText(ss.str().c_str(), "Finite cases: ");
 
+	ss.str(string());
+	ss << totalCases;
+	ImGui::LabelText(ss.str().c_str(), "Total cases: ");
+
 	ImGui::PopItemWidth();
 
 	ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE);
@@ -87,6 +92,7 @@ void ReduceWindow::OnGUI(JobData & jd)
 		//syncPointCount = jd.syncPoints.size();
 		finiteCaseTimes = results.finiteCaseTimes;
 		finiteCases = finiteCaseTimes.size();
+		totalCases = results.casesExplored;
 
 		sort(finiteCaseTimes.begin(), finiteCaseTimes.end());
 	}

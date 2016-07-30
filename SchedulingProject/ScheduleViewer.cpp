@@ -86,16 +86,16 @@ ScheduleViewer::ScheduleViewer()
 	vector<vector<int>> exJobs;
 	exJobs.push_back(vector<int>());
 	exJobs.back().push_back(35500);
-	exJobs.back().push_back(10000);
-	exJobs.back().push_back(10000);
+	exJobs.back().push_back(VAL_DEF);
+	exJobs.back().push_back(VAL_DEF);
 	exJobs.push_back(vector<int>());
 	exJobs.back().push_back(16000);
 	exJobs.back().push_back(16000);
 	exJobs.back().push_back(34700);
 	exJobs.push_back(vector<int>());
-	exJobs.back().push_back(10000);
+	exJobs.back().push_back(VAL_DEF);
 	exJobs.back().push_back(38500);
-	exJobs.back().push_back(10000);
+	exJobs.back().push_back(VAL_DEF);
 
 	jd = JobData(exJobs, syncPoints);
 
@@ -136,13 +136,13 @@ void ScheduleViewer::OnGUI()
 
 	float windowWidth = (ImGui::GetWindowContentRegionWidth() * 0.5f) - style.FramePadding.x;
 
-	ImGui::BeginChild("Reduce Window", ImVec2(windowWidth, 150), true);
+	ImGui::BeginChild("Reduce Window", ImVec2(windowWidth, 170), true);
 
 	reduceWindow->OnGUI(jd);
 
 	ImGui::EndChild();
 	ImGui::SameLine();
-	ImGui::BeginChild("Modification Window", ImVec2(windowWidth, 150), true);
+	ImGui::BeginChild("Modification Window", ImVec2(windowWidth, 170), true);
 
 	modificationWindow->OnGUI(jd);
 
@@ -154,7 +154,7 @@ void ScheduleViewer::OnGUI()
 
 	ImGui::EndChild();
 
-	if (ImGui::Button("Undo"))
+	/*if (ImGui::Button("Undo"))
 	{
 		if (saves.size())
 		{
@@ -167,7 +167,7 @@ void ScheduleViewer::OnGUI()
 
 	ImGui::PushItemWidth(200.0f);
 	
-	/*if (saves.size() > 100)
+	if (saves.size() > 100)
 	{
 		stack<JobData> temp;
 		while (saves.size() > 20)

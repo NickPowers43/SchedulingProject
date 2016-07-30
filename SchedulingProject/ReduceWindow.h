@@ -13,6 +13,7 @@ public:
 	int reducerPreference;
 	ValType idleTime;
 	int finiteCases;
+	int totalCases;
 
 	vector<ValType> finiteCaseTimes;
 

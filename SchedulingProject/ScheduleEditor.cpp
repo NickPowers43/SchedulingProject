@@ -85,7 +85,7 @@ void ScheduleEditor::OnGUI(JobData & jd)
 	ImVec2 tlCorner(tl);
 
 
-	float timeScale = reg.x * UIScale / 5.0f / 100000.0f;
+	float timeScale = reg.x * UIScale / 5.0f / VAL_DEF / 10.0f;
 
 	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (jd.jobs.size() - 1)) + (jobWidth * jd.jobs.size())), BACKGROUND_COLOR);
 
@@ -228,9 +228,9 @@ void ScheduleEditor::OnGUI(JobData & jd)
 
 	if (selectedJobPtr)
 	{
-		float jobTime = floorf((float)*selectedJobPtr) / 10000;
+		float jobTime = floorf((float)*selectedJobPtr) / VAL_DEF;
 		ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f);
-		*selectedJobPtr = jobTime * 10000;
+		*selectedJobPtr = jobTime * VAL_DEF;
 	}
 
 	ImGuiStyle style = ImGui::GetStyle();
@@ -263,7 +263,7 @@ void ScheduleEditor::DrawJobRun(JobRun & jobRun)
 	ImVec2 reg = ImGui::GetContentRegionAvail();
 	ImDrawList* dl = ImGui::GetWindowDrawList();
 
-	float timeScale = reg.x * UIScale / 5.0f / 100000.0f;
+	float timeScale = reg.x * UIScale / 5.0f / VAL_DEF / 10.0f;
 
 	ImVec2 tl = ImGui::GetCursorScreenPos();
 	ImVec2 tlCorner(tl);
