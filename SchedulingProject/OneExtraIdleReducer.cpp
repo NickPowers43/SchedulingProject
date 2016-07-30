@@ -8,39 +8,48 @@ struct ServerRecord
 {
 	vector<ValType> jobs;
 	bool crossed;
-	bool firstJobStarted;
 
 	void operator=(const ServerRecord &rhs)
 	{
 		jobs = rhs.jobs;
 		crossed = rhs.crossed;
-		firstJobStarted = rhs.firstJobStarted;
 	}
 };
 
 bool SortDescendingByFirstEndPoint(const ServerRecord & a, const ServerRecord & b)
 {
-	if (a.firstJobStarted)
+	if (a.jobs.front() > b.jobs.front())
 	{
-		if (b.firstJobStarted)
+		return true;
+	}
+	else if (a.jobs.front() == b.jobs.front())
+	{
+		if (a.crossed)
 		{
-			return a.jobs.front() > b.jobs.front();
+			if (b.crossed)
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
 		}
 		else
 		{
-			return true;
+			if (b.crossed)
+			{
+				return false;
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 	else
 	{
-		if (b.firstJobStarted)
-		{
-			return false;
-		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 }
 
@@ -123,36 +132,24 @@ vector<ServerRecord> ClipSchedule(vector<ServerRecord> & servers, ValType cutTim
 
 	for (size_t i = 0; i < servers.size(); i++)
 	{
-		if (servers[i].firstJobStarted)
-		{
-			if (servers[i].jobs.front() > cutTime)
-			{
-				output.push_back(ServerRecord());
-				output.back().jobs = servers[i].jobs;
-				output.back().jobs.front() -= cutTime;
-				output.back().firstJobStarted = true;
-				output.back().crossed = true;
-			}
-			else
-			{
-				if (servers[i].jobs.size() > 2)
-				{
-					output.push_back(ServerRecord());
-					for (size_t j = 1; j < servers[i].jobs.size(); j++)
-					{
-						output.back().jobs.push_back(servers[i].jobs[j]);
-					}
-					output.back().firstJobStarted = false;
-					output.back().crossed = servers[i].crossed;
-				}
-			}
-		}
-		else
+		if (servers[i].jobs.front() > cutTime)
 		{
 			output.push_back(ServerRecord());
 			output.back().jobs = servers[i].jobs;
-			output.back().firstJobStarted = true;
-			output.back().crossed = servers[i].crossed;
+			output.back().jobs.front() -= cutTime;
+			output.back().crossed = true;
+		}
+		else
+		{
+			if (servers[i].jobs.size() > 1)
+			{
+				output.push_back(ServerRecord());
+				for (size_t j = 1; j < servers[i].jobs.size(); j++)
+				{
+					output.back().jobs.push_back(servers[i].jobs[j]);
+				}
+				output.back().crossed = servers[i].crossed;
+			}
 		}
 	}
 
@@ -172,39 +169,75 @@ ReduceResults ReduceAdjust(vector<ServerRecord> & servers)
 	} minResult;
 	//
 
+	minResult.result.casesExplored = 0;
+	minResult.result.idleTime = VAL_INF;
+
+	bool greaterThanOne = false;
+	bool oneCrossing = false;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
-		if (!servers[i].firstJobStarted)
+		if (servers[i].jobs.size() > 1)
 		{
-			break;
+			greaterThanOne = true;
 		}
+		if (servers[i].crossed)
+		{
+			oneCrossing = true;
+		}
+	}
 
-		//cut schedule at sync point at the end point of the first job of the ith server
+	if (!greaterThanOne)
+	{
+		if (oneCrossing)
+		{
+			minResult.result.idleTime = VAL_ZERO;
+			minResult.result.casesExplored = 1;
+			minResult.result.finiteCaseTimes.push_back(VAL_ZERO);
+			return minResult.result;
+		}
+		else
+		{
+			return minResult.result;
+		}
+	}
+
+	size_t casesExplored = 0;
+	vector<ValType> finiteCaseIdleTimes;
+
+	for (size_t i = 0; i < servers.size(); i++)
+	{
 		ValType syncPoint = servers[i].jobs[0];
-		vector<ServerRecord> subServers = ClipSchedule(servers, syncPoint);
-		ReduceResults subResult = ReduceAdjust(subServers);
-
 		ValType idleTime = syncPoint * (servers.size() - i - 1);
 		for (size_t j = i + 1; j < servers.size(); j++)
 		{
-			if (servers[j].firstJobStarted)
-			{
-				idleTime -= servers[j].jobs[0];
-			}
-			else
-			{
-				break;
-			}
+			idleTime -= servers[j].jobs[0];
 		}
-		subResult.idleTime += idleTime;
 
-		//sort
-		if (subResult.idleTime < minResult.idletime)
+		//cut schedule at sync point at the end point of the first job of the ith server
+		vector<ServerRecord> subServers = ClipSchedule(servers, syncPoint);
+		ReduceResults subResult = ReduceAdjust(subServers);
+
+		for (size_t j = 0; j < subResult.finiteCaseTimes.size(); j++)
 		{
-			minResult.result = subResult;
-			minResult.syncPoint = syncPoint;
+			subResult.finiteCaseTimes[j] += idleTime;
 		}
-		//
+
+		casesExplored += subResult.casesExplored;
+		finiteCaseIdleTimes.insert(finiteCaseIdleTimes.end(), subResult.finiteCaseTimes.begin(), subResult.finiteCaseTimes.end());
+
+		if (subResult.idleTime < VAL_INF)
+		{
+			subResult.idleTime += idleTime;
+
+			//sort
+			if (subResult.idleTime < minResult.idletime)
+			{
+				minResult.idletime = subResult.idleTime;
+				minResult.result = subResult;
+				minResult.syncPoint = syncPoint;
+			}
+			//
+		}
 
 		if (servers[i].crossed)
 		{
@@ -219,6 +252,10 @@ ReduceResults ReduceAdjust(vector<ServerRecord> & servers)
 		minResult.result.syncPoints[i] += minResult.syncPoint;
 	}
 	minResult.result.syncPoints.insert(minResult.result.syncPoints.begin(), minResult.syncPoint);
+
+	minResult.result.finiteCaseTimes = finiteCaseIdleTimes;
+	minResult.result.casesExplored = casesExplored;
+
 	return minResult.result;
 }
 
@@ -230,57 +267,6 @@ ReduceResults OneExtraIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t s
 		servers.push_back(ServerRecord());
 		servers[i].jobs = jobs[i];
 		servers[i].crossed = false;
-		servers[i].firstJobStarted = true;
 	}
-
-	//global sorting variables
-	ValType minTotalIdletime = VAL_INF;		//key
-	ReduceResults minTotalResult;			//value
-	vector<ValType> minPreSyncPoints;		//value
-	//
-
-	//information about the past schedule
-	ValType preIdleTime = VAL_ZERO;
-	ValType sectionBeginTime = VAL_ZERO;
-	vector<ValType> syncPoints;
-	//
-
-	for (size_t i = 0; i < (jobs[0].size() - 1); i++)
-	{
-		ReduceResults subResult = ReduceAdjust(servers);
-		subResult.idleTime += preIdleTime;
-
-		//sort
-		if (minTotalIdletime > subResult.idleTime)
-		{
-			minTotalIdletime = subResult.idleTime;
-			minTotalResult = subResult;
-			minPreSyncPoints = syncPoints;
-		}
-		//
-
-		std::sort(servers.begin(), servers.end(), SortDescendingByFirstEndPoint);
-
-		ValType tSectionIdletime = VAL_ZERO;
-		for (size_t j = 1; j < servers.size(); j++)
-		{
-			tSectionIdletime += servers[0].jobs[0] - servers[j].jobs[0];
-		}
-		//ValType originalTIdletime = tSectionIdletime;
-
-		//advance the past variables
-		preIdleTime += tSectionIdletime;
-		sectionBeginTime += servers[0].jobs[0];
-		syncPoints.push_back(((syncPoints.size()) ? syncPoints.back() : VAL_ZERO) + servers[0].jobs[0]);
-		//
-
-		//remove the first jobs of each server so that we advance to the next section
-		for (size_t j = 0; j < servers.size(); j++)
-		{
-			servers[j].jobs.erase(servers[j].jobs.begin());
-		}
-	}
-	
-	minTotalResult.syncPoints.insert(minTotalResult.syncPoints.begin(), minPreSyncPoints.begin(), minPreSyncPoints.end());
-	return minTotalResult;
+	return ReduceAdjust(servers);
 }

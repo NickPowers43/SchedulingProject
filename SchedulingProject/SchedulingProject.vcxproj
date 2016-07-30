@@ -163,6 +163,10 @@
     <ClInclude Include="Min.h" />
     <ClInclude Include="IdleReducer.h" />
     <ClInclude Include="OneExtraIdleReducer.h" />
+    <ClInclude Include="ReduceWindow.h" />
+    <ClInclude Include="ScheduleEditor.h" />
+    <ClInclude Include="ScheduleFileWindow.h" />
+    <ClInclude Include="ScheduleModificationWindow.h" />
     <ClInclude Include="ScheduleViewer.h" />
     <ClInclude Include="stb_rect_pack.h" />
     <ClInclude Include="stb_textedit.h" />
@@ -181,6 +185,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="IdleReducer.cpp" />
     <ClCompile Include="OneExtraIdleReducer.cpp" />
+    <ClCompile Include="ReduceWindow.cpp" />
+    <ClCompile Include="ScheduleEditor.cpp" />
+    <ClCompile Include="ScheduleFileWindow.cpp" />
+    <ClCompile Include="ScheduleModificationWindow.cpp" />
     <ClCompile Include="ScheduleViewer.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
