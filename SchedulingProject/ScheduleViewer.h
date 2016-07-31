@@ -4,8 +4,10 @@
 #include "JobData.h"
 #include <vector>
 #include <stack>
-
-#define MAX_JOBS 16
+#include "ReduceWindow.h"
+#include "ScheduleEditor.h"
+#include "ScheduleFileWindow.h"
+#include "ScheduleModificationWindow.h"
 
 using namespace std;
 
@@ -22,29 +24,14 @@ public:
 private:
 
 	stack<JobData> saves;
+	ReduceWindow* reduceWindow;
+	ScheduleEditor* editorWindow;
+	ScheduleFileWindow* fileWindow;
+	ScheduleModificationWindow* modificationWindow;
 
 	JobData jd;
-	JobRun jr;
-	JobRun* snapshot;
-	long finiteCases;
 
 	UserSettings settings;
-	int reducerPreference;
 
-	int selectedServer;
-	int selectedJob;
-
-	int* selectedJobPtr;
-
-	int selectedSyncPoint;
-	int serverCount;
-	int jobCount;
-	int syncPointCount;
-
-	float** colors;
-	int colorCount;
-
-	char* filePath;
-	bool canLoadFile;
 };
 

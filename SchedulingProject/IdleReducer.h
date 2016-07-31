@@ -9,6 +9,7 @@ struct ReduceResults
 	ValType idleTime;
 	vector<ValType> syncPoints;
 	size_t casesExplored;
+	vector<ValType> finiteCaseTimes;
 };
 
 class IdleReducer

@@ -11,11 +11,24 @@ BruteIdleReducer::~BruteIdleReducer()
 {
 }
 
-static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& syncPoints, int remainingSyncPoints)
+static ReduceResults CalculateOptimal(vector<vector<ValType>> jobs, int remainingSyncPoints)
 {
+	//sorting variables
+	struct SortingRecord
+	{
+		ValType idletime;//key
+		ReduceResults result;
+		ValType syncPoint;
+	} minResult;
+	//
+
+	minResult.idletime = VAL_INF;
+	minResult.result.idleTime = VAL_INF;
+
+	size_t casesExplored = 0;
+	vector<ValType> finiteCaseIdleTimes;
+
 	bool ranOnce = false;
-	ValType bestSyncPoint = VAL_INF;
-	ValType bestIdleTime = VAL_INF;
 	for (size_t i = 0; i < jobs.size(); i++)
 	{
 		if (jobs[i].size() > 1)
@@ -23,7 +36,10 @@ static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& s
 			ranOnce = true;
 			if (remainingSyncPoints == 0)
 			{
-				return VAL_INF;
+				ReduceResults output;
+				output.casesExplored = 0;
+				output.idleTime = VAL_INF;
+				return output;
 			}
 
 			ValType idleTime = VAL_ZERO;
@@ -51,49 +67,65 @@ static ValType CalculateOptimal(vector<vector<ValType>> jobs, vector<ValType>& s
 				}
 			}
 
-			vector<ValType> temp;
-			ValType subIdleTime = CalculateOptimal(jobs2, temp, remainingSyncPoints - 1);
-			if (subIdleTime != VAL_INF)
-			{
-				idleTime += subIdleTime;
+			//cut schedule at sync point at the end point of the first job of the ith server
+			ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1);
 
-				if (idleTime < bestIdleTime)
+			for (size_t j = 0; j < subResult.finiteCaseTimes.size(); j++)
+			{
+				subResult.finiteCaseTimes[j] += idleTime;
+			}
+
+			casesExplored += subResult.casesExplored;
+			finiteCaseIdleTimes.insert(finiteCaseIdleTimes.end(), subResult.finiteCaseTimes.begin(), subResult.finiteCaseTimes.end());
+
+			if (subResult.idleTime < VAL_INF)
+			{
+				subResult.idleTime += idleTime;
+
+				//sort
+				if (subResult.idleTime < minResult.idletime)
 				{
-					bestSyncPoint = jobs[i].front();
-					bestIdleTime = idleTime;
-					syncPoints = temp;
+					minResult.idletime = subResult.idleTime;
+					minResult.result = subResult;
+					minResult.syncPoint = jobs[i].front();
 				}
+				//
 			}
 
 		}
 	}
 
-	if (bestSyncPoint != VAL_INF)
+	minResult.result.finiteCaseTimes = finiteCaseIdleTimes;
+	minResult.result.casesExplored = casesExplored;
+
+	if (minResult.idletime != VAL_INF)
 	{
-		for (size_t i = 0; i < syncPoints.size(); i++)
+		for (size_t i = 0; i < minResult.result.syncPoints.size(); i++)
 		{
-			syncPoints[i] += bestSyncPoint;
+			minResult.result.syncPoints[i] += minResult.syncPoint;
 		}
-		syncPoints.push_back(bestSyncPoint);
-		return bestIdleTime;
+		minResult.result.syncPoints.push_back(minResult.syncPoint);
 	}
-	if (ranOnce)
+	if (!ranOnce)
 	{
-		return VAL_INF;
-	}
-	else
-	{
-		return VAL_ZERO;
+		if (remainingSyncPoints == 0)
+		{
+			minResult.result.idleTime = VAL_ZERO;
+			minResult.result.casesExplored = 1;
+			minResult.result.finiteCaseTimes.push_back(VAL_ZERO);
+		}
+		else
+		{
+			minResult.result.idleTime = VAL_INF;
+		}
 	}
 
+	return minResult.result;
 }
 
 ReduceResults BruteIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
 {
 	syncPointCount = (syncPointCount < (jobs[0].size() - 1)) ? jobs[0].size() - 1 : syncPointCount;
 
-	ReduceResults output;
-	output.casesExplored = 0;
-	output.idleTime = CalculateOptimal(jobs, output.syncPoints, syncPointCount);
-	return output;
+	return CalculateOptimal(jobs, syncPointCount);
 }
