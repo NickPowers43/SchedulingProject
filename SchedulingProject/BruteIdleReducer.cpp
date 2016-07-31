@@ -37,7 +37,7 @@ static ReduceResults CalculateOptimal(vector<vector<ValType>> jobs, int remainin
 			if (remainingSyncPoints == 0)
 			{
 				ReduceResults output;
-				output.casesExplored = 0;
+				output.casesExplored = 1;
 				output.idleTime = VAL_INF;
 				return output;
 			}
