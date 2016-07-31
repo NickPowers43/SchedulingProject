@@ -3,8 +3,12 @@
 
 #include "imgui.h"
 
+#include <random>
+
 ScheduleModificationWindow::ScheduleModificationWindow()
 {
+	uniformMin = 1.0f;
+	uniformMax = 2.0f;
 }
 
 
@@ -12,8 +16,45 @@ ScheduleModificationWindow::~ScheduleModificationWindow()
 {
 }
 
+void ScheduleModificationWindow::RandomizePoisson(JobData & jd)
+{
+
+}
+
+void ScheduleModificationWindow::RandomizeUniform(JobData & jd)
+{
+	ImGuiStyle style = ImGui::GetStyle();
+	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
+
+	ImGui::PushItemWidth(itemWidth);
+
+	ImGui::InputFloat("##Min", &uniformMin);
+	ImGui::SameLine();
+	ImGui::InputFloat("##Max", &uniformMax);
+	ImGui::SameLine();
+
+	if (ImGui::Button("Uniform"))
+	{
+		default_random_engine generator(rand());
+		uniform_real_distribution<float> dist(uniformMin, uniformMax);
+
+		for (size_t i = 0; i < jd.jobs.size(); i++)
+		{
+			for (size_t j = 0; j < jd.jobs[i].size(); j++)
+			{
+				jd.jobs[i][j] = dist(generator) * VAL_DEF;
+			}
+		}
+	}
+
+	ImGui::PopItemWidth();
+}
+
 void ScheduleModificationWindow::OnGUI(JobData & jd)
 {
+	bool modified = false;
+	JobData originalJD;
+
 	ImVec2 reg = ImGui::GetContentRegionAvail();
 	ImGuiStyle style = ImGui::GetStyle();
 
@@ -34,6 +75,13 @@ void ScheduleModificationWindow::OnGUI(JobData & jd)
 		{
 			jobCount = 0;
 		}
+
+		if (jd.jobs[0].size() != jobCount)
+		{
+			originalJD = jd;
+			modified = true;
+		}
+
 
 		while (jd.jobs[0].size() < jobCount)
 		{
@@ -63,6 +111,12 @@ void ScheduleModificationWindow::OnGUI(JobData & jd)
 	if (serverCount < 0)
 	{
 		serverCount = 0;
+	}
+
+	if (jd.jobs.size() != serverCount)
+	{
+		originalJD = jd;
+		modified = true;
 	}
 
 	while (jd.jobs.size() < serverCount)
@@ -101,6 +155,12 @@ void ScheduleModificationWindow::OnGUI(JobData & jd)
 		syncPointCount = 0;
 	}
 
+	if (jd.syncPoints.size() != syncPointCount)
+	{
+		originalJD = jd;
+		modified = true;
+	}
+
 	while (jd.syncPoints.size() < syncPointCount)
 	{
 		jd.syncPoints.push_back((jd.syncPoints.size()) ? jd.syncPoints.back() + VAL_DEF : VAL_DEF);
@@ -114,4 +174,13 @@ void ScheduleModificationWindow::OnGUI(JobData & jd)
 	}
 
 	ImGui::PopItemWidth();
+
+	if (modified)
+	{
+		//modifyCallback(originalJD);
+		jd.isDirty = true;
+	}
+
+	RandomizeUniform(jd);
+	RandomizePoisson(jd);
 }

@@ -14,10 +14,11 @@ using namespace std;
 
 JobData::JobData()
 {
+	isDirty = true;
 }
 JobData::JobData(const JobData & jd) : jobs(jd.jobs), syncPoints(jd.syncPoints)
 {
-
+	isDirty = true;
 }
 JobData::JobData(vector<vector<ValType>> jobs, vector<ValType> syncPoints) : jobs(jobs), syncPoints(syncPoints)
 {

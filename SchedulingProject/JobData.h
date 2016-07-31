@@ -19,5 +19,7 @@ public:
 
 	vector<vector<ValType>> jobs;
 	vector<ValType> syncPoints;
+
+	bool isDirty;
 };
 
