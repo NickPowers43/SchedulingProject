@@ -96,8 +96,7 @@ void ReduceWindow::OnGUI(JobData & jd)
 
 		if (ImGui::Button("Reduce"))
 		{
-			//saves.push(jd);
-			//updateJobRun = true;
+			changeListener->Push(jd);
 
 			ReduceResults results = reducers[reducerPreference]->Reduce(jd.jobs, jd.syncPoints.size());
 			jd.syncPoints = results.syncPoints;
