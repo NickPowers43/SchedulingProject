@@ -101,10 +101,14 @@ ScheduleViewer::ScheduleViewer()
 
 	settings.includeRedundantSyncPoints = false;
 
-	reduceWindow = new ReduceWindow();
-	editorWindow = new ScheduleEditor();
-	fileWindow = new ScheduleFileWindow();
-	modificationWindow = new ScheduleModificationWindow();
+
+
+	miscWindow = new MiscScheduleWindow();
+	ScheduleChangeListener* changeListener = miscWindow->GetListener();
+	reduceWindow = new ReduceWindow(changeListener);
+	editorWindow = new ScheduleEditor(changeListener);
+	fileWindow = new ScheduleFileWindow(changeListener);
+	modificationWindow = new ScheduleModificationWindow(changeListener);
 }
 
 
@@ -153,36 +157,11 @@ void ScheduleViewer::OnGUI()
 	fileWindow->OnGUI(jd);
 
 	ImGui::EndChild();
+	ImGui::SameLine();
+	ImGui::BeginChild("Misc Window", ImVec2(windowWidth, 50), true);
 
-	/*if (ImGui::Button("Undo"))
-	{
-		if (saves.size())
-		{
-			jd = saves.top();
-			saves.pop();
-		}
-	}
+	miscWindow->OnGUI(jd);
 
-	ImGui::Separator();
+	ImGui::EndChild();
 
-	ImGui::PushItemWidth(200.0f);
-	
-	if (saves.size() > 100)
-	{
-		stack<JobData> temp;
-		while (saves.size() > 20)
-		{
-			temp.push(saves.top());
-			saves.pop();
-		}
-		while (saves.size() > 0)
-		{
-			saves.pop();
-		}
-		while (temp.size())
-		{
-			saves.push(temp.top());
-			temp.pop();
-		}
-	}*/
 }

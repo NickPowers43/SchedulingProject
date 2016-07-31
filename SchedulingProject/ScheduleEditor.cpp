@@ -15,7 +15,7 @@ static float jobSpacing = 5.0f * UIScale;
 static float syncLineThickness = 2.0f * UIScale;
 static float syncLineRunoff = 15.0f * UIScale;
 
-ScheduleEditor::ScheduleEditor()
+ScheduleEditor::ScheduleEditor(ScheduleChangeListener* changeListener) : changeListener(changeListener)
 {
 	int hues[16] = {
 		0,
@@ -73,8 +73,13 @@ void ScheduleEditor::OnGUI(JobData & jd)
 		DrawJobRun(*snapshot);
 	}
 
-	jr = JobRun(jd);
-	jr.Simulate();
+	if (jd.isDirty)
+	{
+		jr = JobRun(jd);
+		jr.Simulate();
+		jd.isDirty = false;
+	}
+
 
 	ImGuiIO io = ImGui::GetIO();
 	ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -182,7 +187,6 @@ void ScheduleEditor::OnGUI(JobData & jd)
 						dist = -dist;
 					if (dist <= 4.0f)
 					{
-						//saves.push(jd);
 						selectedSyncPoint = i;
 					}
 				}
@@ -209,6 +213,7 @@ void ScheduleEditor::OnGUI(JobData & jd)
 		{
 			if (selectedSyncPoint == i)
 			{
+				changeListener->Push(jd);
 				selectedSyncPoint = -1;
 			}
 		}
@@ -220,6 +225,8 @@ void ScheduleEditor::OnGUI(JobData & jd)
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 
+	//this concludes the drawind code for the job run
+
 	ImGui::PushItemWidth(110.0f);
 	ImGui::SetCursorScreenPos(tl);
 	ImGui::InvisibleButton("Background", ImVec2(reg.x, tlCorner.y - tl.y));
@@ -229,8 +236,12 @@ void ScheduleEditor::OnGUI(JobData & jd)
 	if (selectedJobPtr)
 	{
 		float jobTime = floorf((float)*selectedJobPtr) / VAL_DEF;
-		ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f);
-		*selectedJobPtr = jobTime * VAL_DEF;
+
+		if (ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f))
+		{
+			changeListener->Push(jd);
+			*selectedJobPtr = jobTime * VAL_DEF;
+		}
 	}
 
 	ImGuiStyle style = ImGui::GetStyle();

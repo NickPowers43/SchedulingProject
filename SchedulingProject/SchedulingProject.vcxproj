@@ -162,8 +162,10 @@
     <ClInclude Include="JobRun.h" />
     <ClInclude Include="Min.h" />
     <ClInclude Include="IdleReducer.h" />
+    <ClInclude Include="MiscScheduleWindow.h" />
     <ClInclude Include="OneExtraIdleReducer.h" />
     <ClInclude Include="ReduceWindow.h" />
+    <ClInclude Include="ScheduleChangeListener.h" />
     <ClInclude Include="ScheduleEditor.h" />
     <ClInclude Include="ScheduleFileWindow.h" />
     <ClInclude Include="ScheduleModificationWindow.h" />
@@ -184,8 +186,10 @@
     <ClCompile Include="JobRun.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="IdleReducer.cpp" />
+    <ClCompile Include="MiscScheduleWindow.cpp" />
     <ClCompile Include="OneExtraIdleReducer.cpp" />
     <ClCompile Include="ReduceWindow.cpp" />
+    <ClCompile Include="ScheduleChangeListener.cpp" />
     <ClCompile Include="ScheduleEditor.cpp" />
     <ClCompile Include="ScheduleFileWindow.cpp" />
     <ClCompile Include="ScheduleModificationWindow.cpp" />

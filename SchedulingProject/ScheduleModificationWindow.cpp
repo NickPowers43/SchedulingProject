@@ -5,10 +5,13 @@
 
 #include <random>
 
-ScheduleModificationWindow::ScheduleModificationWindow()
+ScheduleModificationWindow::ScheduleModificationWindow(ScheduleChangeListener* changeListener) : changeListener(changeListener)
 {
 	uniformMin = 1.0f;
 	uniformMax = 2.0f;
+	normalMean = 3.0f;
+	normalSigma = 1.0f;
+	constant = 1.0f;
 }
 
 
@@ -16,9 +19,38 @@ ScheduleModificationWindow::~ScheduleModificationWindow()
 {
 }
 
-void ScheduleModificationWindow::RandomizePoisson(JobData & jd)
+void ScheduleModificationWindow::RandomizeNormal(JobData & jd)
 {
+	ImGuiStyle style = ImGui::GetStyle();
+	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
 
+	ImGui::PushItemWidth(itemWidth);
+
+	ImGui::InputFloat("##Mean", &normalMean);
+	ImGui::SameLine();
+	ImGui::InputFloat("##Sigma", &normalSigma);
+	ImGui::SameLine();
+
+	if (ImGui::Button("Normal"))
+	{
+		changeListener->Push(jd);
+
+		default_random_engine generator(rand());
+		normal_distribution<float> dist(normalMean, normalSigma);
+
+		for (size_t i = 0; i < jd.jobs.size(); i++)
+		{
+			for (size_t j = 0; j < jd.jobs[i].size(); j++)
+			{
+				float r = dist(generator);
+				if (r < 0.01f)
+					r = 0.01f;
+				jd.jobs[i][j] = r * VAL_DEF;
+			}
+		}
+	}
+
+	ImGui::PopItemWidth();
 }
 
 void ScheduleModificationWindow::RandomizeUniform(JobData & jd)
@@ -35,6 +67,8 @@ void ScheduleModificationWindow::RandomizeUniform(JobData & jd)
 
 	if (ImGui::Button("Uniform"))
 	{
+		changeListener->Push(jd);
+
 		default_random_engine generator(rand());
 		uniform_real_distribution<float> dist(uniformMin, uniformMax);
 
@@ -43,6 +77,32 @@ void ScheduleModificationWindow::RandomizeUniform(JobData & jd)
 			for (size_t j = 0; j < jd.jobs[i].size(); j++)
 			{
 				jd.jobs[i][j] = dist(generator) * VAL_DEF;
+			}
+		}
+	}
+
+	ImGui::PopItemWidth();
+}
+
+void ScheduleModificationWindow::Constant(JobData & jd)
+{
+	ImGuiStyle style = ImGui::GetStyle();
+	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
+
+	ImGui::PushItemWidth(itemWidth);
+
+	ImGui::InputFloat("##ConstantValue", &constant);
+	ImGui::SameLine();
+
+	if (ImGui::Button("Constant"))
+	{
+		changeListener->Push(jd);
+
+		for (size_t i = 0; i < jd.jobs.size(); i++)
+		{
+			for (size_t j = 0; j < jd.jobs[i].size(); j++)
+			{
+				jd.jobs[i][j] = constant * VAL_DEF;
 			}
 		}
 	}
@@ -177,10 +237,11 @@ void ScheduleModificationWindow::OnGUI(JobData & jd)
 
 	if (modified)
 	{
-		//modifyCallback(originalJD);
+		changeListener->Push(originalJD);
 		jd.isDirty = true;
 	}
 
 	RandomizeUniform(jd);
-	RandomizePoisson(jd);
+	RandomizeNormal(jd);
+	Constant(jd);
 }

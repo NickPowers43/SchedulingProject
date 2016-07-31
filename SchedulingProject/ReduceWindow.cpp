@@ -21,7 +21,7 @@ map<int, IdleReducer*> reducers = {
 	{ REDUCER_ONE_EXTRA, static_cast<IdleReducer*>(new OneExtraIdleReducer()) }
 };
 
-ReduceWindow::ReduceWindow()
+ReduceWindow::ReduceWindow(ScheduleChangeListener* changeListener) : changeListener(changeListener)
 {
 	reducerPreference = REDUCER_BRUTE;
 
@@ -60,51 +60,67 @@ void ReduceWindow::OnGUI(JobData & jd)
 	ImGuiStyle style = ImGui::GetStyle();
 	ImVec2 reg = ImGui::GetContentRegionAvail();
 
-	ImGui::PushItemWidth(100.0f);
+	float windowWidth = (ImGui::GetWindowContentRegionWidth() * 0.5f) - style.FramePadding.x;
 
-	stringstream ss;
-
-	ss.str(string());
-	ss << (idleTime * 0.0001f);
-	ImGui::LabelText(ss.str().c_str(), "Idle time: ");
-
-	ss.str(string());
-	ss << finiteCases;
-	ImGui::LabelText(ss.str().c_str(), "Finite cases: ");
-
-	ss.str(string());
-	ss << totalCases;
-	ImGui::LabelText(ss.str().c_str(), "Total cases: ");
-
-	ImGui::PopItemWidth();
-
-	ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE);
-	ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA);
-
-	if (ImGui::Button("Reduce"))
+	//
+	ImGui::BeginChild("Statistics", ImVec2(windowWidth, reg.y), true);
 	{
-		//saves.push(jd);
-		//updateJobRun = true;
+		ImGui::PushItemWidth(100.0f);
 
-		ReduceResults results = reducers[reducerPreference]->Reduce(jd.jobs, jd.syncPoints.size());
-		jd.syncPoints = results.syncPoints;
-		idleTime = results.idleTime;
-		//syncPointCount = jd.syncPoints.size();
-		finiteCaseTimes = results.finiteCaseTimes;
-		finiteCases = finiteCaseTimes.size();
-		totalCases = results.casesExplored;
+		stringstream ss;
 
-		sort(finiteCaseTimes.begin(), finiteCaseTimes.end());
+		ss.str(string());
+		ss << (idleTime * 0.0001f);
+		ImGui::LabelText(ss.str().c_str(), "Idle time: ");
+
+		ss.str(string());
+		ss << finiteCases;
+		ImGui::LabelText(ss.str().c_str(), "Finite cases: ");
+
+		ss.str(string());
+		ss << totalCases;
+		ImGui::LabelText(ss.str().c_str(), "Total cases: ");
+
+		ImGui::PopItemWidth();
 	}
+	ImGui::EndChild();
+	//
 
-	ImGui::PushItemWidth((reg.x - style.ItemSpacing.x) * 0.5f);
-
-	ImGui::InputText("Path", filePath, FILEPATH_BUF_SIZE);
 	ImGui::SameLine();
-	if (ImGui::Button("Export CSV"))
-	{
-		ExportCSV(filePath, finiteCaseTimes);
-	}
 
-	ImGui::PopItemWidth();
+	//
+	ImGui::BeginChild("Modification Window", ImVec2(windowWidth, reg.y), true);
+	{
+		ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE);
+		ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA);
+
+		if (ImGui::Button("Reduce"))
+		{
+			//saves.push(jd);
+			//updateJobRun = true;
+
+			ReduceResults results = reducers[reducerPreference]->Reduce(jd.jobs, jd.syncPoints.size());
+			jd.syncPoints = results.syncPoints;
+			idleTime = results.idleTime;
+			//syncPointCount = jd.syncPoints.size();
+			finiteCaseTimes = results.finiteCaseTimes;
+			finiteCases = finiteCaseTimes.size();
+			totalCases = results.casesExplored;
+
+			sort(finiteCaseTimes.begin(), finiteCaseTimes.end());
+		}
+
+		ImGui::PushItemWidth((windowWidth - style.ItemSpacing.x) * 0.5f);
+
+		ImGui::InputText("##Path", filePath, FILEPATH_BUF_SIZE);
+		ImGui::SameLine();
+		if (ImGui::Button("Export CSV"))
+		{
+			ExportCSV(filePath, finiteCaseTimes);
+		}
+
+		ImGui::PopItemWidth();
+	}
+	ImGui::EndChild();
+	//
 }

@@ -78,6 +78,12 @@
     <ClInclude Include="ScheduleModificationWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MiscScheduleWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScheduleChangeListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -126,6 +132,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ScheduleModificationWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MiscScheduleWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScheduleChangeListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

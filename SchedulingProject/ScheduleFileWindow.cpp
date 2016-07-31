@@ -4,7 +4,7 @@
 #include "imgui.h"
 #include <fstream>
 
-ScheduleFileWindow::ScheduleFileWindow()
+ScheduleFileWindow::ScheduleFileWindow(ScheduleChangeListener* changeListener) : changeListener(changeListener)
 {
 	canLoadFile = false;
 	filePath = new char[FILEPATH_BUF_SIZE];
@@ -37,9 +37,8 @@ void ScheduleFileWindow::OnGUI(JobData & jd)
 		ImGui::SameLine();
 		if (ImGui::Button("Load"))
 		{
-			//saves.push(jd);
+			changeListener->Push(jd);
 			jd = JobData::LoadFromFile(filePath);
-			//updateJobRun = true;
 		}
 	}
 }

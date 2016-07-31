@@ -1,11 +1,12 @@
 #pragma once
 
 #include "JobData.h"
+#include "ScheduleChangeListener.h"
 
 class ReduceWindow
 {
 public:
-	ReduceWindow();
+	ReduceWindow(ScheduleChangeListener* changeListener);
 	~ReduceWindow();
 
 	void OnGUI(JobData& jd);
@@ -16,6 +17,8 @@ public:
 	int totalCases;
 
 	vector<ValType> finiteCaseTimes;
+
+	ScheduleChangeListener* changeListener;
 
 	char* filePath;
 };

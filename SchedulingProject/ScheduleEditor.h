@@ -3,10 +3,12 @@
 #include "JobData.h"
 #include "JobRun.h"
 
+#include "ScheduleChangeListener.h"
+
 class ScheduleEditor
 {
 public:
-	ScheduleEditor();
+	ScheduleEditor(ScheduleChangeListener* changeListener);
 	~ScheduleEditor();
 
 	void OnGUI(JobData & jd);
@@ -21,6 +23,8 @@ public:
 	int selectedJob;
 	int* selectedJobPtr;
 	int selectedSyncPoint;
+
+	ScheduleChangeListener* changeListener;
 
 	JobRun* snapshot;
 };
