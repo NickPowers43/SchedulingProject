@@ -193,6 +193,8 @@ void ScheduleEditor::OnGUI(JobData & jd)
 			}
 			else if (selectedSyncPoint == i)
 			{
+				jd.isDirty = true;
+
 				syncPoint += io.MouseDelta.x / timeScale;
 
 				for (size_t j = 0; j < jd.syncPoints.size(); j++)
