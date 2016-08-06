@@ -122,7 +122,7 @@ void ScheduleModificationWindow::OnGUI(Scenario & scenario)
 
 	ImGui::PushItemWidth(itemWidth);
 
-	if (scenario.jobs.serverCount())
+	/*if (scenario.jobs.serverCount())
 	{
 		ImGui::Button("Jobs", ImVec2(itemWidth, 0));
 		ImGui::SameLine();
@@ -201,13 +201,13 @@ void ScheduleModificationWindow::OnGUI(Scenario & scenario)
 		{
 			jd.jobs.pop_back();
 		}
-	}
+	}*/
 
 	ImGui::Button("Sync Points", ImVec2(itemWidth, 0));
 	ImGui::SameLine();
 
 
-	int syncPointCount = jd.syncPoints.size();
+	int syncPointCount = scenario.syncPoints.size();
 	ImGui::InputInt("##SyncPoints", &syncPointCount, 1, 2);
 
 	if (syncPointCount < 0)
@@ -215,21 +215,20 @@ void ScheduleModificationWindow::OnGUI(Scenario & scenario)
 		syncPointCount = 0;
 	}
 
-	if (jd.syncPoints.size() != syncPointCount)
+	if (scenario.syncPoints.size() != syncPointCount)
 	{
-		originalJD = jd;
-		modified = true;
+		changeListener->Push(scenario);
 	}
 
-	while (jd.syncPoints.size() < syncPointCount)
+	while (scenario.syncPoints.size() < syncPointCount)
 	{
-		jd.syncPoints.push_back((jd.syncPoints.size()) ? jd.syncPoints.back() + VAL_DEF : VAL_DEF);
+		scenario.syncPoints.push_back((scenario.syncPoints.size()) ? scenario.syncPoints.back() + VAL_DEF : VAL_DEF);
 	}
-	while (jd.syncPoints.size() > syncPointCount)
+	while (scenario.syncPoints.size() > syncPointCount)
 	{
-		if (jd.syncPoints.size())
+		if (scenario.syncPoints.size())
 		{
-			jd.syncPoints.pop_back();
+			scenario.syncPoints.pop_back();
 		}
 	}
 
@@ -237,11 +236,10 @@ void ScheduleModificationWindow::OnGUI(Scenario & scenario)
 
 	if (modified)
 	{
-		changeListener->Push(originalJD);
-		jd.isDirty = true;
+		scenario.isDirty = true;
 	}
 
-	RandomizeUniform(jd);
-	RandomizeNormal(jd);
-	Constant(jd);
+	RandomizeUniform(scenario);
+	RandomizeNormal(scenario);
+	Constant(scenario);
 }
