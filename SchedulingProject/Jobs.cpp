@@ -43,9 +43,7 @@ void Jobs::removeJob(int server, int index)
 
 void Jobs::jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime)
 {
-	vector<vector<ValType>> jobs2;
-
-	ValType idleTime = VAL_ZERO;
+	idleTime = VAL_ZERO;
 	vector<vector<ValType>> jobs2;
 	for (size_t j = 0; j < jobs.size(); j++)
 	{
