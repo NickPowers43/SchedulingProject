@@ -20,7 +20,7 @@ Scenario::Scenario(const Scenario & jd) : jobs(jd.jobs), syncPoints(jd.syncPoint
 {
 	isDirty = true;
 }
-Scenario::Scenario(vector<vector<ValType>> jobs, vector<ValType> syncPoints) : jobs(jobs), syncPoints(syncPoints)
+Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints) : jobs(jobs), syncPoints(syncPoints)
 {
 }
 
@@ -28,14 +28,15 @@ void Scenario::SaveToFile(string filePath)
 {
 	ofstream ofs(filePath.c_str(), ifstream::out);
 
-	ofs << jobs.size() << endl;
-	ofs << jobs[0].size() << endl;
+	ofs << "v2" << endl;
+	ofs << jobs.serverCount() << endl;
 
-	for (size_t i = 0; i < jobs.size(); i++)
+	for (size_t i = 0; i < jobs.serverCount(); i++)
 	{
+		ofs << jobs.jobCount(i) << endl;
 		for (size_t j = 0; j < jobs[0].size(); j++)
 		{
-			ofs << jobs[i][j] << endl;
+			ofs << jobs.getJob(i, j) << endl;
 		}
 	}
 
@@ -83,33 +84,69 @@ Scenario Scenario::LoadFromFile(string filePath)
 	ifstream ifs(filePath.c_str(), ifstream::in);
 
 	string line;
-	getline(ifs, line);
-	int serverCount = stoi(line);
-	getline(ifs, line);
-	int jobCount = stoi(line);
-
-	vector<vector<ValType>> jobs;
-	for (size_t i = 0; i < serverCount; i++)
-	{
-		jobs.push_back(vector<ValType>());
-		for (size_t j = 0; j < jobCount; j++)
-		{
-			getline(ifs, line);
-			jobs[i].push_back(stoi(line));
-		}
-	}
 
 	getline(ifs, line);
-	int sPointCount = stoi(line);
-
-	vector<int> syncPoints;
-	for (size_t i = 0; i < sPointCount; i++)
+	
+	if (line.compare("v2") == 0)
 	{
 		getline(ifs, line);
-		syncPoints.push_back(stoi(line));
+		int serverCount = stoi(line);
+
+		vector<vector<ValType>> jobs;
+		for (size_t i = 0; i < serverCount; i++)
+		{
+			getline(ifs, line);
+			int jobCount = stoi(line);
+
+			jobs.push_back(vector<ValType>());
+			for (size_t j = 0; j < jobCount; j++)
+			{
+				getline(ifs, line);
+				jobs[i].push_back(stoi(line));
+			}
+		}
+
+		getline(ifs, line);
+		int sPointCount = stoi(line);
+
+		vector<int> syncPoints;
+		for (size_t i = 0; i < sPointCount; i++)
+		{
+			getline(ifs, line);
+			syncPoints.push_back(stoi(line));
+		}
+
+		return Scenario(jobs, syncPoints);
 	}
-	
-	return Scenario(jobs, syncPoints);
+	else
+	{
+		int serverCount = stoi(line);
+		getline(ifs, line);
+		int jobCount = stoi(line);
+
+		vector<vector<ValType>> jobs;
+		for (size_t i = 0; i < serverCount; i++)
+		{
+			jobs.push_back(vector<ValType>());
+			for (size_t j = 0; j < jobCount; j++)
+			{
+				getline(ifs, line);
+				jobs[i].push_back(stoi(line));
+			}
+		}
+
+		getline(ifs, line);
+		int sPointCount = stoi(line);
+
+		vector<int> syncPoints;
+		for (size_t i = 0; i < sPointCount; i++)
+		{
+			getline(ifs, line);
+			syncPoints.push_back(stoi(line));
+		}
+
+		return Scenario(jobs, syncPoints);
+	}
 }
 
 Scenario::~Scenario()
