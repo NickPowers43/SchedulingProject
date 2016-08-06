@@ -15,8 +15,8 @@ MiscScheduleWindow::~MiscScheduleWindow()
 
 void MiscScheduleWindow::Push(Scenario & scenario)
 {
-	jd.isDirty = true;
-	undoes.push(jd);
+	scenario.isDirty = true;
+	undoes.push(scenario);
 
 	if (undoes.size() > 200)
 	{
@@ -57,9 +57,9 @@ void MiscScheduleWindow::OnGUI(Scenario & scenario)
 		undoVisible = true;
 		if (ImGui::Button("Undo"))
 		{
-			jd.isDirty = true;
-			redoes.push(jd);
-			jd = undoes.top();
+			scenario.isDirty = true;
+			redoes.push(scenario);
+			scenario = undoes.top();
 			undoes.pop();
 		}
 	}
@@ -71,9 +71,9 @@ void MiscScheduleWindow::OnGUI(Scenario & scenario)
 		}
 		if (ImGui::Button("Redo"))
 		{
-			jd.isDirty = true;
-			undoes.push(jd);
-			jd = redoes.top();
+			scenario.isDirty = true;
+			undoes.push(scenario);
+			scenario = redoes.top();
 			redoes.pop();
 		}
 	}
