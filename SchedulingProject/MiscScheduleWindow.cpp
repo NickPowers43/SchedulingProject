@@ -13,7 +13,7 @@ MiscScheduleWindow::~MiscScheduleWindow()
 {
 }
 
-void MiscScheduleWindow::Push(Scenario & jd)
+void MiscScheduleWindow::Push(Scenario & scenario)
 {
 	jd.isDirty = true;
 	undoes.push(jd);
@@ -49,7 +49,7 @@ ScheduleChangeListener* MiscScheduleWindow::GetListener()
 	return &listener;
 }
 
-void MiscScheduleWindow::OnGUI(Scenario & jd)
+void MiscScheduleWindow::OnGUI(Scenario & scenario)
 {
 	bool undoVisible = false;
 	if (undoes.size())

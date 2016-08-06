@@ -19,9 +19,14 @@ int Jobs::jobCount(int server)
 {
 	return jobs[server].size();
 }
+
 ValType Jobs::getJob(int server, int index)
 {
 	return jobs[server][index];
+}
+void Jobs::setJob(int server, int index, ValType value)
+{
+	jobs[server][index] = value;
 }
 
 void Jobs::addServer()

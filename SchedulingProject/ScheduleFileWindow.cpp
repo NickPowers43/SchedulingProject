@@ -19,7 +19,7 @@ ScheduleFileWindow::~ScheduleFileWindow()
 {
 }
 
-void ScheduleFileWindow::OnGUI(Scenario & jd)
+void ScheduleFileWindow::OnGUI(Scenario & scenario)
 {
 	bool checkFileExists = ImGui::InputText("Path", filePath, FILEPATH_BUF_SIZE);
 	ImGui::SameLine();

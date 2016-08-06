@@ -11,8 +11,8 @@ public:
 	MiscScheduleWindow();
 	~MiscScheduleWindow();
 
-	void Push(Scenario & jd);
-	void OnGUI(Scenario & jd);
+	void Push(Scenario & scenario);
+	void OnGUI(Scenario & scenario);
 	ScheduleChangeListener* GetListener();
 
 	ScheduleChangeListener listener;

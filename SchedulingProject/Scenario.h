@@ -9,7 +9,7 @@ class Scenario
 {
 public:
 	Scenario();
-	Scenario(const Scenario& jd);
+	Scenario(const Scenario& scenario);
 	Scenario(Jobs jobs, vector<ValType> syncPoints);
 	~Scenario();
 

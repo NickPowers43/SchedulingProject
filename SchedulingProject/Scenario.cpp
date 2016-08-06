@@ -16,7 +16,7 @@ Scenario::Scenario()
 {
 	isDirty = true;
 }
-Scenario::Scenario(const Scenario & jd) : jobs(jd.jobs), syncPoints(jd.syncPoints)
+Scenario::Scenario(const Scenario & scenario) : jobs(jd.jobs), syncPoints(jd.syncPoints)
 {
 	isDirty = true;
 }

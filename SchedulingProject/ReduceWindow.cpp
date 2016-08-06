@@ -58,7 +58,7 @@ void ExportCSV(char* filePath, vector<ValType> values)
 
 }
 
-void ReduceWindow::OnGUI(Scenario & jd)
+void ReduceWindow::OnGUI(Scenario & scenario)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	ImVec2 reg = ImGui::GetContentRegionAvail();

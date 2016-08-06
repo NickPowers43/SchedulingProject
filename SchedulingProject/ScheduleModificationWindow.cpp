@@ -19,7 +19,7 @@ ScheduleModificationWindow::~ScheduleModificationWindow()
 {
 }
 
-void ScheduleModificationWindow::RandomizeNormal(Scenario & jd)
+void ScheduleModificationWindow::RandomizeNormal(Scenario & scenario)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
@@ -33,19 +33,19 @@ void ScheduleModificationWindow::RandomizeNormal(Scenario & jd)
 
 	if (ImGui::Button("Normal"))
 	{
-		changeListener->Push(jd);
+		changeListener->Push(scenario);
 
 		default_random_engine generator(rand());
 		normal_distribution<float> dist(normalMean, normalSigma);
 
-		for (size_t i = 0; i < jd.jobs.size(); i++)
+		for (size_t i = 0; i < scenario.jobs.serverCount(); i++)
 		{
-			for (size_t j = 0; j < jd.jobs[i].size(); j++)
+			for (size_t j = 0; j < scenario.jobs.jobCount(i); j++)
 			{
 				float r = dist(generator);
 				if (r < 0.01f)
 					r = 0.01f;
-				jd.jobs[i][j] = r * VAL_DEF;
+				scenario.jobs.setJob(i, j, r * VAL_DEF);
 			}
 		}
 	}
@@ -53,7 +53,7 @@ void ScheduleModificationWindow::RandomizeNormal(Scenario & jd)
 	ImGui::PopItemWidth();
 }
 
-void ScheduleModificationWindow::RandomizeUniform(Scenario & jd)
+void ScheduleModificationWindow::RandomizeUniform(Scenario & scenario)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
@@ -67,16 +67,16 @@ void ScheduleModificationWindow::RandomizeUniform(Scenario & jd)
 
 	if (ImGui::Button("Uniform"))
 	{
-		changeListener->Push(jd);
+		changeListener->Push(scenario);
 
 		default_random_engine generator(rand());
 		uniform_real_distribution<float> dist(uniformMin, uniformMax);
 
-		for (size_t i = 0; i < jd.jobs.size(); i++)
+		for (size_t i = 0; i < scenario.jobs.serverCount(); i++)
 		{
-			for (size_t j = 0; j < jd.jobs[i].size(); j++)
+			for (size_t j = 0; j < scenario.jobs.jobCount(i); j++)
 			{
-				jd.jobs[i][j] = dist(generator) * VAL_DEF;
+				scenario.jobs.setJob(i, j, dist(generator) * VAL_DEF);
 			}
 		}
 	}
@@ -84,7 +84,7 @@ void ScheduleModificationWindow::RandomizeUniform(Scenario & jd)
 	ImGui::PopItemWidth();
 }
 
-void ScheduleModificationWindow::Constant(Scenario & jd)
+void ScheduleModificationWindow::Constant(Scenario & scenario)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
@@ -96,13 +96,13 @@ void ScheduleModificationWindow::Constant(Scenario & jd)
 
 	if (ImGui::Button("Constant"))
 	{
-		changeListener->Push(jd);
+		changeListener->Push(scenario);
 
-		for (size_t i = 0; i < jd.jobs.size(); i++)
+		for (size_t i = 0; i < scenario.jobs.serverCount(); i++)
 		{
-			for (size_t j = 0; j < jd.jobs[i].size(); j++)
+			for (size_t j = 0; j < scenario.jobs.jobCount(i); j++)
 			{
-				jd.jobs[i][j] = constant * VAL_DEF;
+				scenario.jobs.setJob(i, j, constant * VAL_DEF);
 			}
 		}
 	}
@@ -110,7 +110,7 @@ void ScheduleModificationWindow::Constant(Scenario & jd)
 	ImGui::PopItemWidth();
 }
 
-void ScheduleModificationWindow::OnGUI(Scenario & jd)
+void ScheduleModificationWindow::OnGUI(Scenario & scenario)
 {
 	bool modified = false;
 	Scenario originalJD;
@@ -122,7 +122,7 @@ void ScheduleModificationWindow::OnGUI(Scenario & jd)
 
 	ImGui::PushItemWidth(itemWidth);
 
-	if (jd.jobs.size())
+	if (scenario.jobs.serverCount())
 	{
 		ImGui::Button("Jobs", ImVec2(itemWidth, 0));
 		ImGui::SameLine();

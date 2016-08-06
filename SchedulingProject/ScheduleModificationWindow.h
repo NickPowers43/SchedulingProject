@@ -9,12 +9,12 @@ public:
 	ScheduleModificationWindow(ScheduleChangeListener* changeListener);
 	~ScheduleModificationWindow();
 
-	void (*modifyCallback)(Scenario & jd);
+	void (*modifyCallback)(Scenario & scenario);
 
-	void RandomizeNormal(Scenario & jd);
-	void RandomizeUniform(Scenario & jd);
-	void Constant(Scenario & jd);
-	void OnGUI(Scenario & jd);
+	void RandomizeNormal(Scenario & scenario);
+	void RandomizeUniform(Scenario & scenario);
+	void Constant(Scenario & scenario);
+	void OnGUI(Scenario & scenario);
 
 	float uniformMin;
 	float uniformMax;

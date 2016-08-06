@@ -11,7 +11,7 @@ public:
 	ScheduleEditor(ScheduleChangeListener* changeListener);
 	~ScheduleEditor();
 
-	void OnGUI(Scenario & jd);
+	void OnGUI(Scenario & scenario);
 	void DrawJobRun(JobRun & jobRun);
 
 	JobRun jr;

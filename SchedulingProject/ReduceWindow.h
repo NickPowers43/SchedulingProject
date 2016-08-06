@@ -12,7 +12,7 @@ public:
 	ReduceWindow(ScheduleChangeListener* changeListener);
 	~ReduceWindow();
 
-	void OnGUI(Scenario& jd);
+	void OnGUI(Scenario& scenario);
 
 	int reducerPreference;
 	ValType idleTime;

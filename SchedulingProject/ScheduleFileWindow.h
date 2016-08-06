@@ -9,7 +9,7 @@ public:
 	ScheduleFileWindow(ScheduleChangeListener* changeListener);
 	~ScheduleFileWindow();
 
-	void OnGUI(Scenario & jd);
+	void OnGUI(Scenario & scenario);
 
 	ScheduleChangeListener* changeListener;
 

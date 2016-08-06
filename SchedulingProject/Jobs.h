@@ -12,7 +12,9 @@ public:
 
 	int serverCount();
 	int jobCount(int server);
+
 	ValType getJob(int server, int index);
+	void setJob(int server, int index, ValType value);
 
 	void addServer();
 	void addJob(int server, ValType length);
