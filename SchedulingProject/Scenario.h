@@ -5,17 +5,17 @@
 
 using namespace std;
 
-class JobData
+class Scenario
 {
 public:
-	JobData();
-	JobData(const JobData& jd);
-	JobData(vector<vector<ValType>> jobs, vector<ValType> syncPoints);
-	~JobData();
+	Scenario();
+	Scenario(const Scenario& jd);
+	Scenario(vector<vector<ValType>> jobs, vector<ValType> syncPoints);
+	~Scenario();
 
 	void SaveToFile(string filePath);
 	void MinimizeIdletime();
-	static JobData LoadFromFile(string filePath);
+	static Scenario LoadFromFile(string filePath);
 
 	vector<vector<ValType>> jobs;
 	vector<ValType> syncPoints;

@@ -9,6 +9,6 @@ public:
 	BruteIdleReducer();
 	~BruteIdleReducer();
 
-	ReduceResults Reduce(vector<vector<ValType>> jobs, size_t syncPointCount);
+	void Reduce(vector<vector<ValType>> jobs, size_t syncPointCount);
 };
 

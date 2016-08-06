@@ -19,7 +19,7 @@ ScheduleModificationWindow::~ScheduleModificationWindow()
 {
 }
 
-void ScheduleModificationWindow::RandomizeNormal(JobData & jd)
+void ScheduleModificationWindow::RandomizeNormal(Scenario & jd)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
@@ -53,7 +53,7 @@ void ScheduleModificationWindow::RandomizeNormal(JobData & jd)
 	ImGui::PopItemWidth();
 }
 
-void ScheduleModificationWindow::RandomizeUniform(JobData & jd)
+void ScheduleModificationWindow::RandomizeUniform(Scenario & jd)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
@@ -84,7 +84,7 @@ void ScheduleModificationWindow::RandomizeUniform(JobData & jd)
 	ImGui::PopItemWidth();
 }
 
-void ScheduleModificationWindow::Constant(JobData & jd)
+void ScheduleModificationWindow::Constant(Scenario & jd)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	float itemWidth = ((ImGui::GetContentRegionAvailWidth() * 0.5f) - (2.0f * style.ItemSpacing.x)) / 3.0f;
@@ -110,10 +110,10 @@ void ScheduleModificationWindow::Constant(JobData & jd)
 	ImGui::PopItemWidth();
 }
 
-void ScheduleModificationWindow::OnGUI(JobData & jd)
+void ScheduleModificationWindow::OnGUI(Scenario & jd)
 {
 	bool modified = false;
-	JobData originalJD;
+	Scenario originalJD;
 
 	ImVec2 reg = ImGui::GetContentRegionAvail();
 	ImGuiStyle style = ImGui::GetStyle();

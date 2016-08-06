@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "JobData.h"
+#include "Scenario.h"
 #include "JobRun.h"
 #include "ScheduleViewer.h"
 #include <Windows.h>

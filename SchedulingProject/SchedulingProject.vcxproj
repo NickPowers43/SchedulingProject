@@ -158,7 +158,8 @@
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_glfw.h" />
     <ClInclude Include="imgui_internal.h" />
-    <ClInclude Include="JobData.h" />
+    <ClInclude Include="Jobs.h" />
+    <ClInclude Include="Scenario.h" />
     <ClInclude Include="JobRun.h" />
     <ClInclude Include="Min.h" />
     <ClInclude Include="IdleReducer.h" />
@@ -182,7 +183,8 @@
     <ClCompile Include="imgui_demo.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_impl_glfw.cpp" />
-    <ClCompile Include="JobData.cpp" />
+    <ClCompile Include="Jobs.cpp" />
+    <ClCompile Include="Scenario.cpp" />
     <ClCompile Include="JobRun.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="IdleReducer.cpp" />

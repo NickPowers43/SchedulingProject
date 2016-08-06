@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "BruteIdleReducer.h"
+
 #include <math.h>
+#include <algorithm>
 
 BruteIdleReducer::BruteIdleReducer()
 {
@@ -123,9 +125,16 @@ static ReduceResults CalculateOptimal(vector<vector<ValType>> jobs, int remainin
 	return minResult.result;
 }
 
-ReduceResults BruteIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
+void BruteIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
 {
+	running = true;
+	cancelled = false;
+
 	syncPointCount = (syncPointCount < (jobs[0].size() - 1)) ? jobs[0].size() - 1 : syncPointCount;
 
-	return CalculateOptimal(jobs, syncPointCount);
+	result = CalculateOptimal(jobs, syncPointCount);
+
+	//sort(result.finiteCaseTimes.begin(), result.finiteCaseTimes.end());
+
+	running = false;
 }

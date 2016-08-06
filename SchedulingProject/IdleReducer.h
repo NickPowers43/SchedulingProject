@@ -18,6 +18,19 @@ public:
 	IdleReducer();
 	virtual ~IdleReducer();
 
-	virtual ReduceResults Reduce(vector<vector<ValType>> jobs, size_t syncPointCount);
+	bool Cancelled();
+	bool Running();
+	float GetProgress();
+	ReduceResults GetResult();
+	void Cancel();
+	void SetProgress(float progress);
+	virtual void Reduce(vector<vector<ValType>> jobs, size_t syncPointCount);
+
+protected:
+
+	ReduceResults result;
+	bool cancelled;
+	bool running;
+	float progress;
 };
 

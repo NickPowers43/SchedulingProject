@@ -97,7 +97,7 @@ ScheduleViewer::ScheduleViewer()
 	exJobs.back().push_back(38500);
 	exJobs.back().push_back(VAL_DEF);
 
-	jd = JobData(exJobs, syncPoints);
+	jd = Scenario(exJobs, syncPoints);
 
 	settings.includeRedundantSyncPoints = false;
 

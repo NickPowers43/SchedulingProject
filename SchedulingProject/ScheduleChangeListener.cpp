@@ -12,7 +12,7 @@ ScheduleChangeListener::~ScheduleChangeListener()
 {
 }
 
-void ScheduleChangeListener::Push(JobData &jd)
+void ScheduleChangeListener::Push(Scenario &jd)
 {
 	window->Push(jd);
 }

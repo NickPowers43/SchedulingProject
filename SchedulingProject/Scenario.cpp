@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "JobData.h"
+#include "Scenario.h"
 
 #include <Windows.h>
 
@@ -12,19 +12,19 @@
 
 using namespace std;
 
-JobData::JobData()
+Scenario::Scenario()
 {
 	isDirty = true;
 }
-JobData::JobData(const JobData & jd) : jobs(jd.jobs), syncPoints(jd.syncPoints)
+Scenario::Scenario(const Scenario & jd) : jobs(jd.jobs), syncPoints(jd.syncPoints)
 {
 	isDirty = true;
 }
-JobData::JobData(vector<vector<ValType>> jobs, vector<ValType> syncPoints) : jobs(jobs), syncPoints(syncPoints)
+Scenario::Scenario(vector<vector<ValType>> jobs, vector<ValType> syncPoints) : jobs(jobs), syncPoints(syncPoints)
 {
 }
 
-void JobData::SaveToFile(string filePath)
+void Scenario::SaveToFile(string filePath)
 {
 	ofstream ofs(filePath.c_str(), ifstream::out);
 
@@ -67,7 +67,7 @@ void MinIdletimeSection(vector<vector<ValType>> jobs, vector<ValType> & syncPoin
 void MinIdletime(vector<vector<ValType>> jobs, vector<ValType> & syncPoints)
 {
 }
-void JobData::MinimizeIdletime()
+void Scenario::MinimizeIdletime()
 {
 	if (syncPoints.size() == jobs[0].size())
 	{
@@ -78,7 +78,7 @@ void JobData::MinimizeIdletime()
 
 	}
 }
-JobData JobData::LoadFromFile(string filePath)
+Scenario Scenario::LoadFromFile(string filePath)
 {
 	ifstream ifs(filePath.c_str(), ifstream::in);
 
@@ -109,9 +109,9 @@ JobData JobData::LoadFromFile(string filePath)
 		syncPoints.push_back(stoi(line));
 	}
 	
-	return JobData(jobs, syncPoints);
+	return Scenario(jobs, syncPoints);
 }
 
-JobData::~JobData()
+Scenario::~Scenario()
 {
 }

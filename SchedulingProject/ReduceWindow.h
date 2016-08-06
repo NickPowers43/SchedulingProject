@@ -1,7 +1,10 @@
 #pragma once
 
-#include "JobData.h"
+#include "Scenario.h"
 #include "ScheduleChangeListener.h"
+#include "IdleReducer.h"
+
+#include <thread>
 
 class ReduceWindow
 {
@@ -9,7 +12,7 @@ public:
 	ReduceWindow(ScheduleChangeListener* changeListener);
 	~ReduceWindow();
 
-	void OnGUI(JobData& jd);
+	void OnGUI(Scenario& jd);
 
 	int reducerPreference;
 	ValType idleTime;
@@ -18,7 +21,9 @@ public:
 
 	vector<ValType> finiteCaseTimes;
 
+	IdleReducer* activeReducer;
 	ScheduleChangeListener* changeListener;
+	thread reducerThread;
 
 	char* filePath;
 };

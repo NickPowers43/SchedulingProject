@@ -1,17 +1,17 @@
 #pragma once
 
-#include "JobData.h"
+#include "Scenario.h"
 
 class JobRun
 {
 public:
 	JobRun();
-	JobRun(JobData & data);
+	JobRun(Scenario & data);
 	~JobRun();
 
 	void Simulate();
 
-	JobData data;
+	Scenario data;
 	vector<vector<ValType>> jobStarts;
 	vector<ValType> lastJob;
 

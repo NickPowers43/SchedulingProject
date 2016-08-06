@@ -42,9 +42,6 @@
     <ClInclude Include="stb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JobData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="JobRun.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -84,6 +81,12 @@
     <ClInclude Include="ScheduleChangeListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Scenario.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Jobs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -99,9 +102,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JobData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JobRun.cpp">
@@ -138,6 +138,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ScheduleChangeListener.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Scenario.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Jobs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

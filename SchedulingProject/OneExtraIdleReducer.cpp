@@ -259,8 +259,11 @@ ReduceResults ReduceAdjust(vector<ServerRecord> & servers)
 	return minResult.result;
 }
 
-ReduceResults OneExtraIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
+void OneExtraIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
 {
+	running = true;
+	cancelled = false;
+
 	vector<ServerRecord> servers;
 	for (size_t i = 0; i < jobs.size(); i++)
 	{
@@ -268,5 +271,10 @@ ReduceResults OneExtraIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t s
 		servers[i].jobs = jobs[i];
 		servers[i].crossed = false;
 	}
-	return ReduceAdjust(servers);
+
+	result = ReduceAdjust(servers);
+
+	//sort(result.finiteCaseTimes.begin(), result.finiteCaseTimes.end());
+
+	running = false;
 }

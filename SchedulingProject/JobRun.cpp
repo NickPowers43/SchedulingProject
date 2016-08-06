@@ -7,7 +7,7 @@ using namespace std;
 JobRun::JobRun()
 {
 }
-JobRun::JobRun(JobData & data) : data(data), jobStarts(data.jobs)
+JobRun::JobRun(Scenario & data) : data(data), jobStarts(data.jobs)
 {
 	for (size_t i = 0; i < data.jobs.size(); i++)
 	{

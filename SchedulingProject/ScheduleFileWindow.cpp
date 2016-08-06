@@ -19,7 +19,7 @@ ScheduleFileWindow::~ScheduleFileWindow()
 {
 }
 
-void ScheduleFileWindow::OnGUI(JobData & jd)
+void ScheduleFileWindow::OnGUI(Scenario & jd)
 {
 	bool checkFileExists = ImGui::InputText("Path", filePath, FILEPATH_BUF_SIZE);
 	ImGui::SameLine();
@@ -38,7 +38,7 @@ void ScheduleFileWindow::OnGUI(JobData & jd)
 		if (ImGui::Button("Load"))
 		{
 			changeListener->Push(jd);
-			jd = JobData::LoadFromFile(filePath);
+			jd = Scenario::LoadFromFile(filePath);
 		}
 	}
 }

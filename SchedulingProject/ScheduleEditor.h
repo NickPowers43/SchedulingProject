@@ -1,6 +1,6 @@
 #pragma once
 
-#include "JobData.h"
+#include "Scenario.h"
 #include "JobRun.h"
 
 #include "ScheduleChangeListener.h"
@@ -11,7 +11,7 @@ public:
 	ScheduleEditor(ScheduleChangeListener* changeListener);
 	~ScheduleEditor();
 
-	void OnGUI(JobData & jd);
+	void OnGUI(Scenario & jd);
 	void DrawJobRun(JobRun & jobRun);
 
 	JobRun jr;

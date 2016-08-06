@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <thread>
 
 #include "BruteIdleReducer.h"
 #include "OneExtraIdleReducer.h"
@@ -37,6 +38,8 @@ ReduceWindow::ReduceWindow(ScheduleChangeListener* changeListener) : changeListe
 	}
 
 	strcpy_s(filePath, FILEPATH_BUF_SIZE, "data.csv");
+
+	activeReducer = NULL;
 }
 
 
@@ -55,7 +58,7 @@ void ExportCSV(char* filePath, vector<ValType> values)
 
 }
 
-void ReduceWindow::OnGUI(JobData & jd)
+void ReduceWindow::OnGUI(Scenario & jd)
 {
 	ImGuiStyle style = ImGui::GetStyle();
 	ImVec2 reg = ImGui::GetContentRegionAvail();
@@ -94,22 +97,55 @@ void ReduceWindow::OnGUI(JobData & jd)
 		ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE);
 		ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA);
 
-		if (ImGui::Button("Reduce"))
+		if (activeReducer)
 		{
-			changeListener->Push(jd);
+			if (activeReducer->Running())
+			{
+				if (ImGui::Button("Cancel"))
+				{
+					activeReducer->Cancel();
+				}
 
-			ReduceResults results = reducers[reducerPreference]->Reduce(jd.jobs, jd.syncPoints.size());
-			jd.syncPoints = results.syncPoints;
-			idleTime = results.idleTime;
-			//syncPointCount = jd.syncPoints.size();
-			finiteCaseTimes = results.finiteCaseTimes;
-			finiteCases = finiteCaseTimes.size();
-			totalCases = results.casesExplored;
+				//draw progress bar
+				ImVec2 size(ImGui::GetContentRegionAvailWidth(), 25.0f);
+				ImVec2 pos = ImGui::GetCursorScreenPos();
+				ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + (size.x * 0.5f), pos.y + size.y), 0xffffffff); // fill
+				ImGui::GetWindowDrawList()->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), 0xffffffff); // border
+				ImGui::Dummy(size);
+			}
+			else
+			{
+				//get result
+				ReduceResults results = activeReducer->GetResult();
+				jd.syncPoints = results.syncPoints;
+				idleTime = results.idleTime;
+				//syncPointCount = jd.syncPoints.size();
+				finiteCaseTimes = results.finiteCaseTimes;
+				finiteCases = finiteCaseTimes.size();
+				totalCases = results.casesExplored;
+				jd.isDirty = true;
 
-			sort(finiteCaseTimes.begin(), finiteCaseTimes.end());
+
+				activeReducer = NULL;
+				reducerThread.join();
+			}
+		}
+		else
+		{
+			if (ImGui::Button("Reduce"))
+			{
+				changeListener->Push(jd);
+
+				activeReducer = reducers[reducerPreference];
+
+				reducerThread = thread([&]() {
+					activeReducer->Reduce(jd.jobs, jd.syncPoints.size());
+				});
+			}
 		}
 
-		ImGui::PushItemWidth((windowWidth - style.ItemSpacing.x) * 0.5f);
+
+		//ImGui::PushItemWidth((windowWidth - style.ItemSpacing.x) * 0.5f);
 
 		ImGui::InputText("##Path", filePath, FILEPATH_BUF_SIZE);
 		ImGui::SameLine();
@@ -118,8 +154,10 @@ void ReduceWindow::OnGUI(JobData & jd)
 			ExportCSV(filePath, finiteCaseTimes);
 		}
 
-		ImGui::PopItemWidth();
+		//ImGui::PopItemWidth();
 	}
+
 	ImGui::EndChild();
 	//
+
 }

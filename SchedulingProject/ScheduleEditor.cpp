@@ -66,7 +66,7 @@ ScheduleEditor::~ScheduleEditor()
 {
 }
 
-void ScheduleEditor::OnGUI(JobData & jd)
+void ScheduleEditor::OnGUI(Scenario & jd)
 {
 	if (snapshot)
 	{

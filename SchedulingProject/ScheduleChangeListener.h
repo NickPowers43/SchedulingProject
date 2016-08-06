@@ -1,6 +1,6 @@
 #pragma once
 
-#include "JobData.h"
+#include "Scenario.h"
 
 class MiscScheduleWindow;
 
@@ -10,7 +10,7 @@ public:
 	ScheduleChangeListener(MiscScheduleWindow* window);
 	~ScheduleChangeListener();
 
-	void Push(JobData &jd);
+	void Push(Scenario &jd);
 
 	MiscScheduleWindow* window;
 };

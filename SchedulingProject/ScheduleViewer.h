@@ -1,7 +1,7 @@
 #pragma once
 
 #include "JobRun.h"
-#include "JobData.h"
+#include "Scenario.h"
 #include <vector>
 #include <stack>
 
@@ -32,7 +32,7 @@ private:
 	ScheduleModificationWindow* modificationWindow;
 	MiscScheduleWindow* miscWindow;
 
-	JobData jd;
+	Scenario jd;
 
 	UserSettings settings;
 

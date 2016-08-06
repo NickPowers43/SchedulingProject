@@ -11,8 +11,34 @@ IdleReducer::~IdleReducer()
 {
 }
 
-ReduceResults IdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
+bool IdleReducer::Cancelled()
 {
-	ReduceResults output;
-	return output;
+	return cancelled;
+}
+bool IdleReducer::Running()
+{
+	return running;
+}
+
+float IdleReducer::GetProgress()
+{
+	return progress;
+}
+ReduceResults IdleReducer::GetResult()
+{
+	return result;
+}
+
+void IdleReducer::Cancel()
+{
+	cancelled = true;
+}
+
+void IdleReducer::SetProgress(float progress)
+{
+	IdleReducer::progress = progress;
+}
+
+void IdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
+{
 }
