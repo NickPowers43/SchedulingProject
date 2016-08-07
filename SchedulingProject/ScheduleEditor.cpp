@@ -3,9 +3,11 @@
 
 #include "imgui.h"
 #include <algorithm>
+#include <sstream>
 
 #define BACKGROUND_COLOR 0xffffffff
 #define LINE_COLOR 0xff333333
+#define LINE_RED_COLOR 0xff3333ff
 #define IDLE_COLOR 0x00cccccc
 
 static float UIScale = 1.0f;
@@ -57,6 +59,8 @@ ScheduleEditor::ScheduleEditor(ScheduleChangeListener* changeListener) : changeL
 	selectedJobPtr = NULL;
 
 	selectedSyncPoint = -1;
+
+	tLineSelected = false;
 
 	snapshot = NULL;
 }
@@ -228,7 +232,7 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 
 	for (size_t i = 0; i < scenario.syncPoints.size(); i++)
 	{
-		if (io.MouseDown[0])
+		if (!tLineSelected && io.MouseDown[0])
 		{
 			if (selectedSyncPoint < 0)
 			{
@@ -247,6 +251,14 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 			{
 				scenario.isDirty = true;
 				scenario.syncPoints[i] += io.MouseDelta.x / timeScale;
+
+				if (scenario.syncPoints[i] > scenario.t)
+				{
+					scenario.syncPoints[i] = scenario.t;
+					selectedSyncPoint = -1;
+
+					sort(scenario.syncPoints.begin(), scenario.syncPoints.end());
+				}
 			}
 		}
 		else
@@ -263,6 +275,48 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 		horizontalPos = tl.x + borderPadding + (scenario.syncPoints[i] * timeScale);
 		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 	}
+
+	if ((selectedSyncPoint < 0) && io.MouseDown[0])
+	{
+		if (!tLineSelected)
+		{
+			if ((io.MousePos.y > tl.y && io.MousePos.y < br.y) && (io.MousePos.x > tl.x && io.MousePos.x < br.x))
+			{
+				float dist = io.MousePos.x - (tl.x + borderPadding + (scenario.t * timeScale));
+				if (dist < 0.0f)
+					dist = -dist;
+				if (dist <= 4.0f)
+				{
+					tLineSelected = true;
+				}
+			}
+		}
+		else
+		{
+			scenario.isDirty = true;
+			scenario.t += io.MouseDelta.x / timeScale;
+
+			for (size_t i = 0; i < scenario.syncPoints.size(); i++)
+			{
+				if (scenario.syncPoints[i] > scenario.t)
+				{
+					scenario.syncPoints[i] = scenario.t;
+				}
+			}
+		}
+	}
+	else
+	{
+		if (tLineSelected)
+		{
+			changeListener->Push(scenario);
+			tLineSelected = false;
+		}
+	}
+	
+
+	horizontalPos = tl.x + borderPadding + (scenario.t * timeScale);
+	dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_RED_COLOR, syncLineThickness);
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 
@@ -312,6 +366,12 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 			snapshot = NULL;
 		}
 	}
+
+	stringstream ss;
+
+	ss.str(string());
+	ss << (jr.idleTime / (float)VAL_DEF);
+	ImGui::LabelText(ss.str().c_str(), "Idle time: ");
 }
 
 

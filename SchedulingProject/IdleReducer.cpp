@@ -39,7 +39,7 @@ void IdleReducer::SetProgress(float progress)
 	IdleReducer::progress = progress;
 }
 
-void IdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
+void IdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
 {
 }
 void IdleReducer::OnGUI()

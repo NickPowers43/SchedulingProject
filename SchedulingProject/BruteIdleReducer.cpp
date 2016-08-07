@@ -13,7 +13,7 @@ BruteIdleReducer::~BruteIdleReducer()
 {
 }
 
-static ReduceResults CalculateOptimal(vector<vector<ValType>> jobs, int remainingSyncPoints)
+static ReduceResults CalculateOptimal(Jobs jobs, int remainingSyncPoints, ValType t)
 {
 	//sorting variables
 	struct SortingRecord
@@ -26,113 +26,107 @@ static ReduceResults CalculateOptimal(vector<vector<ValType>> jobs, int remainin
 
 	minResult.idletime = VAL_INF;
 	minResult.result.idleTime = VAL_INF;
+	minResult.result.casesExplored = 0;
 
 	size_t casesExplored = 0;
 	vector<ValType> finiteCaseIdleTimes;
 
 	bool ranOnce = false;
-	for (size_t i = 0; i < jobs.size(); i++)
+	for (size_t i = 0; i < jobs.serverCount(); i++)
 	{
-		if (jobs[i].size() > 1)
+		if (jobs.jobCount(i) > 1)
 		{
 			ranOnce = true;
-			if (remainingSyncPoints == 0)
-			{
-				ReduceResults output;
-				output.casesExplored = 1;
-				output.idleTime = VAL_INF;
-				return output;
-			}
+			ValType syncPoint = jobs.getJob(i, 0);
 
-			ValType idleTime = VAL_ZERO;
-			vector<vector<ValType>> jobs2;
-			for (size_t j = 0; j < jobs.size(); j++)
+			if (syncPoint < t && (remainingSyncPoints > 0))
 			{
-				if (jobs[j].size() > 1)
+				Jobs jobs2;
+				ValType idleTime = VAL_ZERO;
+				jobs.jobsAfter(syncPoint, jobs2, idleTime);
+
+				//cut schedule at sync point at the end point of the first job of the ith server
+				ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1, t - syncPoint);
+
+				casesExplored += subResult.casesExplored;
+
+				if (subResult.idleTime < VAL_INF)
 				{
-					jobs2.push_back(vector<ValType>());
-					if (j != i)
+					subResult.idleTime += idleTime;
+
+					for (size_t j = 0; j < subResult.finiteCaseTimes.size(); j++)
 					{
-						if (jobs[j].front() > jobs[i].front())
-						{
-							jobs2.back().push_back(jobs[j].front() - jobs[i].front());
-						}
-						else
-						{
-							idleTime += jobs[i].front() - jobs[j].front();
-						}
+						subResult.finiteCaseTimes[j] += idleTime;
 					}
-					for (size_t k = 1; k < jobs[j].size(); k++)
+					finiteCaseIdleTimes.insert(finiteCaseIdleTimes.end(), subResult.finiteCaseTimes.begin(), subResult.finiteCaseTimes.end());
+
+					//sort
+					if (subResult.idleTime < minResult.idletime)
 					{
-						jobs2.back().push_back(jobs[j][k]);
+						minResult.idletime = subResult.idleTime;
+						minResult.result = subResult;
+						minResult.syncPoint = syncPoint;
 					}
+					//
 				}
 			}
-
-			//cut schedule at sync point at the end point of the first job of the ith server
-			ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1);
-
-			for (size_t j = 0; j < subResult.finiteCaseTimes.size(); j++)
-			{
-				subResult.finiteCaseTimes[j] += idleTime;
-			}
-
-			casesExplored += subResult.casesExplored;
-			finiteCaseIdleTimes.insert(finiteCaseIdleTimes.end(), subResult.finiteCaseTimes.begin(), subResult.finiteCaseTimes.end());
-
-			if (subResult.idleTime < VAL_INF)
-			{
-				subResult.idleTime += idleTime;
-
-				//sort
-				if (subResult.idleTime < minResult.idletime)
-				{
-					minResult.idletime = subResult.idleTime;
-					minResult.result = subResult;
-					minResult.syncPoint = jobs[i].front();
-				}
-				//
-			}
-
 		}
 	}
-
-	minResult.result.finiteCaseTimes = finiteCaseIdleTimes;
-	minResult.result.casesExplored = casesExplored;
 
 	if (minResult.idletime != VAL_INF)
 	{
-		for (size_t i = 0; i < minResult.result.syncPoints.size(); i++)
-		{
-			minResult.result.syncPoints[i] += minResult.syncPoint;
-		}
-		minResult.result.syncPoints.push_back(minResult.syncPoint);
 	}
-	if (!ranOnce)
+	if (remainingSyncPoints == 0)
 	{
-		if (remainingSyncPoints == 0)
+		ValType idleTime = VAL_ZERO;
+		for (size_t i = 0; i < jobs.serverCount(); i++)
 		{
-			minResult.result.idleTime = VAL_ZERO;
-			minResult.result.casesExplored = 1;
-			minResult.result.finiteCaseTimes.push_back(VAL_ZERO);
+			if (jobs.jobCount(i) > 0)
+			{
+				ValType job = jobs.getJob(i, 0);
+				if (job < t)
+				{
+					idleTime += t - job;
+				}
+			}
+			else
+			{
+				idleTime += t;
+			}
 		}
-		else
+
+		minResult.result.idleTime = idleTime;
+		minResult.result.casesExplored = 1;
+		minResult.result.finiteCaseTimes.push_back(idleTime);
+	}
+	else
+	{
+		if (minResult.idletime < VAL_INF)
 		{
-			minResult.result.idleTime = VAL_INF;
+			//configurations were found in sub problems
+
+			minResult.result.finiteCaseTimes = finiteCaseIdleTimes;
+			minResult.result.casesExplored = casesExplored;
+
+			for (size_t i = 0; i < minResult.result.syncPoints.size(); i++)
+			{
+				minResult.result.syncPoints[i] += minResult.syncPoint;
+			}
+			minResult.result.syncPoints.insert(minResult.result.syncPoints.begin(), minResult.syncPoint);
 		}
 	}
 
 	return minResult.result;
 }
 
-void BruteIdleReducer::Reduce(vector<vector<ValType>> jobs, size_t syncPointCount)
+void BruteIdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
 {
 	running = true;
 	cancelled = false;
 
-	syncPointCount = (syncPointCount < (jobs[0].size() - 1)) ? jobs[0].size() - 1 : syncPointCount;
+	//syncPointCount = (syncPointCount < (jobs[0].size() - 1)) ? jobs[0].size() - 1 : syncPointCount;
 
-	result = CalculateOptimal(jobs, syncPointCount);
+	result = CalculateOptimal(jobs, syncPointCount, t);
 
 	//sort(result.finiteCaseTimes.begin(), result.finiteCaseTimes.end());
 

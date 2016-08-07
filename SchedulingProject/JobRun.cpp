@@ -47,7 +47,7 @@ void JobRun::Simulate()
 			size_t syncI = 0;
 			ValType idleStart = data.jobs.getJob(i, 0);
 
-			jobStarts[i][0] = 0;
+			jobStarts[i][0] = VAL_ZERO;
 
 			for (size_t jobI = 1; jobI < data.jobs.jobCount(i); jobI++)
 			{
@@ -66,13 +66,37 @@ void JobRun::Simulate()
 				}
 				else
 				{
+					if (syncI == data.syncPoints.size())
+					{
+						if (idleStart < data.t)
+						{
+							//this will only happen once
+							idleTime += data.t - idleStart;
+							idleStart = data.t;
+							lastJob[i] = jobI;
+						}
+						else
+						{
+							lastJob[i] = jobI + 1;
+						}
+						syncI++;
+					}
 					//no more sync points for this job
-					idleTime = INFINITY;
+					//idleTime = INFINITY;
 
 					jobStarts[i][jobI] = idleStart;//set its start position to end of prev job
 					idleStart += data.jobs.getJob(i, jobI);//set next start position to end of this job
 				}
 			}
+
+			if (idleStart < data.t)
+			{
+				idleTime += data.t - idleStart;
+			}
+		}
+		else
+		{
+			idleTime += data.t;
 		}
 	}
 }

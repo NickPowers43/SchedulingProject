@@ -7,6 +7,7 @@ using namespace std;
 class Jobs
 {
 public:
+	Jobs();
 	Jobs(vector<vector<ValType>> jobs);
 	~Jobs();
 

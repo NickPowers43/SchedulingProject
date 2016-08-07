@@ -9,6 +9,6 @@ public:
 	OneExtraIdleReducer();
 	~OneExtraIdleReducer();
 
-	void Reduce(vector<vector<ValType>> jobs, size_t syncPointCount);
+	void Reduce(Jobs jobs, size_t syncPointCount, ValType t);
 };
 

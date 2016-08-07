@@ -2,6 +2,10 @@
 #include "Jobs.h"
 
 
+
+Jobs::Jobs()
+{
+}
 Jobs::Jobs(vector<vector<ValType>> jobs) : jobs(jobs)
 {
 }
@@ -54,18 +58,21 @@ void Jobs::jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime)
 	{
 		jobs2.push_back(vector<ValType>());
 
-		if (jobs[j].front() > syncPoint)
+		if (jobs[j].size())
 		{
-			jobs2.back().push_back(jobs[j].front() - syncPoint);
-		}
-		else
-		{
-			idleTime += syncPoint - jobs[j].front();
-		}
+			if (jobs[j].front() > syncPoint)
+			{
+				jobs2.back().push_back(jobs[j].front() - syncPoint);
+			}
+			else
+			{
+				idleTime += syncPoint - jobs[j].front();
+			}
 
-		for (size_t k = 1; k < jobs[j].size(); k++)
-		{
-			jobs2.back().push_back(jobs[j][k]);
+			for (size_t k = 1; k < jobs[j].size(); k++)
+			{
+				jobs2.back().push_back(jobs[j][k]);
+			}
 		}
 	}
 

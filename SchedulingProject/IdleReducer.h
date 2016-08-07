@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Jobs.h"
 #include <vector>
 
 using namespace std;
@@ -24,7 +25,7 @@ public:
 	ReduceResults GetResult();
 	void Cancel();
 	void SetProgress(float progress);
-	virtual void Reduce(vector<vector<ValType>> jobs, size_t syncPointCount);
+	virtual void Reduce(Jobs jobs, size_t syncPointCount, ValType t);
 	virtual void OnGUI();
 
 protected:

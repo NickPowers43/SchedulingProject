@@ -24,6 +24,8 @@ public:
 	int* selectedJobPtr;
 	int selectedSyncPoint;
 
+	bool tLineSelected;
+
 	ScheduleChangeListener* changeListener;
 
 	JobRun* snapshot;

@@ -53,7 +53,7 @@ void ExportCSV(char* filePath, vector<ValType> values)
 
 	for (size_t i = 0; i < values.size(); i++)
 	{
-		ofs << (values[i]  / (float)VAL_DEF) << endl;
+		ofs << (values[i] / (float)VAL_DEF) << endl;
 	}
 
 }
@@ -73,7 +73,7 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		stringstream ss;
 
 		ss.str(string());
-		ss << (idleTime * 0.0001f);
+		ss << (idleTime / (float)VAL_DEF);
 		ImGui::LabelText(ss.str().c_str(), "Idle time: ");
 
 		ss.str(string());
@@ -115,15 +115,14 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 			}
 			else
 			{
-				////get result
-				//ReduceResults results = activeReducer->GetResult();
-				//jd.syncPoints = results.syncPoints;
-				//idleTime = results.idleTime;
-				////syncPointCount = jd.syncPoints.size();
-				//finiteCaseTimes = results.finiteCaseTimes;
-				//finiteCases = finiteCaseTimes.size();
-				//totalCases = results.casesExplored;
-				//jd.isDirty = true;
+				//get result
+				ReduceResults results = activeReducer->GetResult();
+				scenario.syncPoints = results.syncPoints;
+				idleTime = results.idleTime;
+				finiteCaseTimes = results.finiteCaseTimes;
+				finiteCases = finiteCaseTimes.size();
+				totalCases = results.casesExplored;
+				scenario.isDirty = true;
 
 
 				activeReducer = NULL;
@@ -136,11 +135,11 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 			{
 				changeListener->Push(scenario);
 
-				/*activeReducer = reducers[reducerPreference];
+				activeReducer = reducers[reducerPreference];
 
 				reducerThread = thread([&]() {
-					activeReducer->Reduce(jd.jobs, jd.syncPoints.size());
-				});*/
+					activeReducer->Reduce(scenario.jobs, scenario.syncPoints.size(), scenario.t);
+				});
 			}
 		}
 
