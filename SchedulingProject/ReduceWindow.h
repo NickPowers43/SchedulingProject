@@ -19,6 +19,8 @@ public:
 	int finiteCases;
 	int totalCases;
 
+	bool waitingResult;
+
 	vector<ValType> finiteCaseTimes;
 
 	IdleReducer* activeReducer;

@@ -21,10 +21,12 @@ public:
 
 	bool Cancelled();
 	bool Running();
+	bool Finished();
 	float GetProgress();
 	ReduceResults GetResult();
 	void Cancel();
 	void SetProgress(float progress);
+	void SetRunning(bool state);
 	virtual void Reduce(Jobs jobs, size_t syncPointCount, ValType t);
 	virtual void OnGUI();
 
@@ -34,5 +36,6 @@ protected:
 	bool cancelled;
 	bool running;
 	float progress;
+	bool finished;
 };
 

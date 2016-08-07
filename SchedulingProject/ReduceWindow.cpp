@@ -25,6 +25,7 @@ map<int, IdleReducer*> reducers = {
 ReduceWindow::ReduceWindow(ScheduleChangeListener* changeListener) : changeListener(changeListener)
 {
 	reducerPreference = REDUCER_BRUTE;
+	activeReducer = reducers[reducerPreference];
 
 	finiteCases = -1;
 	totalCases = -1;
@@ -39,7 +40,6 @@ ReduceWindow::ReduceWindow(ScheduleChangeListener* changeListener) : changeListe
 
 	strcpy_s(filePath, FILEPATH_BUF_SIZE, "data.csv");
 
-	activeReducer = NULL;
 }
 
 
@@ -94,10 +94,7 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 	//
 	ImGui::BeginChild("Modification Window", ImVec2(windowWidth, reg.y), true);
 	{
-		ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE);
-		ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA);
-
-		if (activeReducer)
+		if (waitingResult)
 		{
 			if (activeReducer->Running())
 			{
@@ -113,7 +110,7 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 				ImGui::GetWindowDrawList()->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), 0xffffffff); // border
 				ImGui::Dummy(size);
 			}
-			else
+			else if (activeReducer->Finished())
 			{
 				//get result
 				ReduceResults results = activeReducer->GetResult();
@@ -124,22 +121,37 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 				totalCases = results.casesExplored;
 				scenario.isDirty = true;
 
-
-				activeReducer = NULL;
 				reducerThread.join();
+
+				waitingResult = false;
 			}
+
 		}
 		else
 		{
+			if (ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE) ||
+				ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA))
+			{
+				activeReducer = reducers[reducerPreference];
+			}
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			float windowWidth = ImGui::GetWindowContentRegionWidth() - style.FramePadding.x;
+			ImGui::BeginChild("Reduce Parameters", ImVec2(windowWidth, 70), true);
+			activeReducer->OnGUI();
+			ImGui::EndChild();
+
 			if (ImGui::Button("Reduce"))
 			{
 				changeListener->Push(scenario);
 
-				activeReducer = reducers[reducerPreference];
+				activeReducer->SetRunning(true);
 
 				reducerThread = thread([&]() {
 					activeReducer->Reduce(scenario.jobs, scenario.syncPoints.size(), scenario.t);
 				});
+
+				waitingResult = true;
 			}
 		}
 

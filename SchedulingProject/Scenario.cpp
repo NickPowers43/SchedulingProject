@@ -16,11 +16,11 @@ Scenario::Scenario() : jobs(vector<vector<ValType>>())
 {
 	isDirty = true;
 }
-Scenario::Scenario(const Scenario & scenario) : jobs(scenario.jobs), syncPoints(scenario.syncPoints), t(scenario.t)
+Scenario::Scenario(const Scenario & scenario) : jobs(scenario.jobs), syncPoints(scenario.syncPoints), t(scenario.t), useT(scenario.useT)
 {
 	isDirty = true;
 }
-Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints, ValType t) : jobs(jobs), syncPoints(syncPoints), t(t)
+Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints, ValType t, bool useT) : jobs(jobs), syncPoints(syncPoints), t(t), useT(useT)
 {
 }
 
@@ -28,7 +28,7 @@ void Scenario::SaveToFile(string filePath)
 {
 	ofstream ofs(filePath.c_str(), ifstream::out);
 
-	ofs << "v2" << endl;
+	ofs << "v3" << endl;
 	ofs << jobs.serverCount() << endl;
 
 	for (size_t i = 0; i < jobs.serverCount(); i++)
@@ -47,6 +47,8 @@ void Scenario::SaveToFile(string filePath)
 	}
 
 	ofs << t << endl;
+
+	ofs << (size_t)useT << endl;
 }
 
 Scenario Scenario::LoadFromFile(string filePath)
@@ -56,8 +58,8 @@ Scenario Scenario::LoadFromFile(string filePath)
 	string line;
 
 	getline(ifs, line);
-	
-	if (line.compare("v2") == 0)
+
+	if (line.compare("v3") == 0)
 	{
 		getline(ifs, line);
 		int serverCount = stoi(line);
@@ -89,7 +91,44 @@ Scenario Scenario::LoadFromFile(string filePath)
 		getline(ifs, line);
 		ValType t = stoi(line);
 
-		return Scenario(jobs, syncPoints, t);
+		getline(ifs, line);
+		bool useT = stoi(line);
+
+		return Scenario(jobs, syncPoints, t, useT);
+	}
+	else if (line.compare("v2") == 0)
+	{
+		getline(ifs, line);
+		int serverCount = stoi(line);
+
+		vector<vector<ValType>> jobs;
+		for (size_t i = 0; i < serverCount; i++)
+		{
+			getline(ifs, line);
+			int jobCount = stoi(line);
+
+			jobs.push_back(vector<ValType>());
+			for (size_t j = 0; j < jobCount; j++)
+			{
+				getline(ifs, line);
+				jobs[i].push_back(stoi(line));
+			}
+		}
+
+		getline(ifs, line);
+		int sPointCount = stoi(line);
+
+		vector<int> syncPoints;
+		for (size_t i = 0; i < sPointCount; i++)
+		{
+			getline(ifs, line);
+			syncPoints.push_back(stoi(line));
+		}
+
+		getline(ifs, line);
+		ValType t = stoi(line);
+
+		return Scenario(jobs, syncPoints, t, false);
 	}
 	else
 	{
@@ -118,7 +157,7 @@ Scenario Scenario::LoadFromFile(string filePath)
 			syncPoints.push_back(stoi(line));
 		}
 
-		return Scenario(jobs, syncPoints, VAL_DEF * 10);
+		return Scenario(jobs, syncPoints, VAL_DEF * 10, false);
 	}
 }
 

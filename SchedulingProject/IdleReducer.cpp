@@ -4,6 +4,9 @@
 
 IdleReducer::IdleReducer()
 {
+	running = false;
+	cancelled = false;
+	finished = false;
 }
 
 
@@ -18,6 +21,10 @@ bool IdleReducer::Cancelled()
 bool IdleReducer::Running()
 {
 	return running;
+}
+bool IdleReducer::Finished()
+{
+	return finished;
 }
 
 float IdleReducer::GetProgress()
@@ -37,6 +44,10 @@ void IdleReducer::Cancel()
 void IdleReducer::SetProgress(float progress)
 {
 	IdleReducer::progress = progress;
+}
+void IdleReducer::SetRunning(bool state)
+{
+	running = state;
 }
 
 void IdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)

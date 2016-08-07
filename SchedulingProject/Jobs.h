@@ -23,6 +23,7 @@ public:
 	void removeJob(int server, int index);
 
 	void jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime);
+	size_t MaxJobCount();
 
 private:
 	vector<vector<ValType>> jobs;

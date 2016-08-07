@@ -78,3 +78,15 @@ void Jobs::jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime)
 
 	output = Jobs(jobs2);
 }
+size_t Jobs::MaxJobCount()
+{
+	size_t output = 0;
+	for (size_t j = 0; j < jobs.size(); j++)
+	{
+		if (jobs[j].size() > output)
+		{
+			output = jobs[j].size();
+		}
+	}
+	return output;
+}

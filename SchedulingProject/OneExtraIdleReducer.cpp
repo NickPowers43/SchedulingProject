@@ -263,6 +263,7 @@ void OneExtraIdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
 {
 	running = true;
 	cancelled = false;
+	finished = false;
 
 	vector<ServerRecord> servers;
 	for (size_t i = 0; i < jobs.serverCount(); i++)
@@ -277,4 +278,8 @@ void OneExtraIdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
 	//sort(result.finiteCaseTimes.begin(), result.finiteCaseTimes.end());
 
 	running = false;
+	finished = true;
+}
+void OneExtraIdleReducer::OnGUI()
+{
 }
