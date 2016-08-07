@@ -12,15 +12,15 @@
 
 using namespace std;
 
-Scenario::Scenario()
+Scenario::Scenario() : jobs(vector<vector<ValType>>())
 {
 	isDirty = true;
 }
-Scenario::Scenario(const Scenario & scenario) : jobs(jd.jobs), syncPoints(jd.syncPoints)
+Scenario::Scenario(const Scenario & scenario) : jobs(scenario.jobs), syncPoints(scenario.syncPoints), t(scenario.t)
 {
 	isDirty = true;
 }
-Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints) : jobs(jobs), syncPoints(syncPoints)
+Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints, ValType t) : jobs(jobs), syncPoints(syncPoints), t(t)
 {
 }
 
@@ -34,7 +34,7 @@ void Scenario::SaveToFile(string filePath)
 	for (size_t i = 0; i < jobs.serverCount(); i++)
 	{
 		ofs << jobs.jobCount(i) << endl;
-		for (size_t j = 0; j < jobs[0].size(); j++)
+		for (size_t j = 0; j < jobs.jobCount(i); j++)
 		{
 			ofs << jobs.getJob(i, j) << endl;
 		}
@@ -45,40 +45,10 @@ void Scenario::SaveToFile(string filePath)
 	{
 		ofs << syncPoints[i] << endl;
 	}
+
+	ofs << t << endl;
 }
 
-
-void MinIdletimeAux(vector<bool> crossing, vector<vector<ValType>> jobs, vector<ValType> & syncPoints)
-{
-	for (size_t i = 0; i < jobs.size(); i++)
-	{
-
-	}
-}
-void MinIdletimeSection(vector<vector<ValType>> jobs, vector<ValType> & syncPoints)
-{
-	Min<ValType, vector<ValType>> minConfig(VAL_ZERO, syncPoints);
-
-	for (size_t sectionI = 0; sectionI < jobs[0].size(); sectionI++)
-	{
-		ValType initialIdletime;
-
-	}
-}
-void MinIdletime(vector<vector<ValType>> jobs, vector<ValType> & syncPoints)
-{
-}
-void Scenario::MinimizeIdletime()
-{
-	if (syncPoints.size() == jobs[0].size())
-	{
-		
-	}
-	else
-	{
-
-	}
-}
 Scenario Scenario::LoadFromFile(string filePath)
 {
 	ifstream ifs(filePath.c_str(), ifstream::in);
@@ -116,7 +86,10 @@ Scenario Scenario::LoadFromFile(string filePath)
 			syncPoints.push_back(stoi(line));
 		}
 
-		return Scenario(jobs, syncPoints);
+		getline(ifs, line);
+		ValType t = stoi(line);
+
+		return Scenario(jobs, syncPoints, t);
 	}
 	else
 	{
@@ -145,7 +118,7 @@ Scenario Scenario::LoadFromFile(string filePath)
 			syncPoints.push_back(stoi(line));
 		}
 
-		return Scenario(jobs, syncPoints);
+		return Scenario(jobs, syncPoints, VAL_DEF * 10);
 	}
 }
 

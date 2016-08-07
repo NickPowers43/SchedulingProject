@@ -25,7 +25,7 @@ void ScheduleFileWindow::OnGUI(Scenario & scenario)
 	ImGui::SameLine();
 	if (ImGui::Button("Save"))
 	{
-		jd.SaveToFile(filePath);
+		scenario.SaveToFile(filePath);
 	}
 	if (checkFileExists)
 	{
@@ -37,8 +37,8 @@ void ScheduleFileWindow::OnGUI(Scenario & scenario)
 		ImGui::SameLine();
 		if (ImGui::Button("Load"))
 		{
-			changeListener->Push(jd);
-			jd = Scenario::LoadFromFile(filePath);
+			changeListener->Push(scenario);
+			scenario = Scenario::LoadFromFile(filePath);
 		}
 	}
 }

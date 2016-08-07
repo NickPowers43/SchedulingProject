@@ -25,6 +25,7 @@ public:
 	void Cancel();
 	void SetProgress(float progress);
 	virtual void Reduce(vector<vector<ValType>> jobs, size_t syncPointCount);
+	virtual void OnGUI();
 
 protected:
 

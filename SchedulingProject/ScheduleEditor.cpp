@@ -73,11 +73,11 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 		DrawJobRun(*snapshot);
 	}
 
-	if (jd.isDirty)
+	if (scenario.isDirty)
 	{
-		jr = JobRun(jd);
+		jr = JobRun(scenario);
 		jr.Simulate();
-		jd.isDirty = false;
+		scenario.isDirty = false;
 	}
 
 
@@ -92,14 +92,16 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 
 	float timeScale = reg.x * UIScale / 5.0f / VAL_DEF / 10.0f;
 
-	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (jd.jobs.size() - 1)) + (jobWidth * jd.jobs.size())), BACKGROUND_COLOR);
+	int rows = scenario.jobs.serverCount() + 1;
+	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (rows - 1)) + (jobWidth * rows)), BACKGROUND_COLOR);
+
+	int removeServerI = -1;
 
 	tlCorner.y += borderPadding;
+	tlCorner.x = tl.x + borderPadding;
 	float jobChartTop = tlCorner.y;
-	int i = 0;
-	for_each(jr.data.jobs.begin(), jr.data.jobs.end(), [&](vector<int>& jobs) {
-
-		tlCorner.x = tl.x + borderPadding;
+	for (size_t i = 0; i < scenario.jobs.serverCount(); i++)
+	{
 		/*ss.str(string());
 		ss << i;
 		dl->AddText(tlCorner, 0xffffffff, ss.str().c_str());
@@ -107,9 +109,9 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 		int j = 0;
 		int colI = 0;
 		float preceedingEnd = tlCorner.x;
-		for_each(jobs.begin(), jobs.end(), [&](int& job) {
-
-			float jobLength = job * timeScale;
+		for (size_t j = 0; j < scenario.jobs.jobCount(i); j++)
+		{
+			float jobLength = scenario.jobs.getJob(i, j) * timeScale;
 
 			ImVec4 col;
 			col.x = colors[colI][0];
@@ -143,7 +145,6 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 				{
 					selectedServer = i;
 					selectedJob = j;
-					selectedJobPtr = &jd.jobs[i][j];
 				}
 			}
 
@@ -157,32 +158,83 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 
 			preceedingEnd = brCorner.x;
 			colI = (colI + 1) % MAX_JOBS;
-			j++;
-		});
+		}
+
+
+		ImGui::PushID(9000 + i);
+
+		preceedingEnd += jobSpacing;
+
+		if (scenario.jobs.jobCount(i) > 0)
+		{
+			ImGui::SetCursorScreenPos(ImVec2(preceedingEnd, tlCorner.y));
+			if (ImGui::Button("-", ImVec2(jobWidth, jobWidth)))
+			{
+				changeListener->Push(scenario);
+				scenario.jobs.removeJob(i, scenario.jobs.jobCount(i) - 1);
+				scenario.isDirty = true;
+			}
+
+		}
+		else 
+		{
+			ImGui::SetCursorScreenPos(ImVec2(preceedingEnd, tlCorner.y));
+			if (ImGui::Button("X", ImVec2(jobWidth, jobWidth)))
+			{
+				changeListener->Push(scenario);
+				removeServerI = i;
+				scenario.isDirty = true;
+			}
+		}
+
+		preceedingEnd += jobWidth;
+		preceedingEnd += jobSpacing;
+
+		ImGui::SetCursorScreenPos(ImVec2(preceedingEnd, tlCorner.y));
+		if (ImGui::Button("+", ImVec2(jobWidth, jobWidth)))
+		{
+			changeListener->Push(scenario);
+			scenario.jobs.addJob(i, VAL_DEF);
+			scenario.isDirty = true;
+		}
+
+		ImGui::PopID();
+
 		tlCorner.y += jobWidth;
-		if (i < jr.data.jobs.size() - 1)
+		if (true)
 		{
 			tlCorner.y += jobSpacing;
 		}
-		i++;
-	});
+	}
+
+	ImGui::SetCursorScreenPos(ImVec2(tlCorner.x + jobSpacing, tlCorner.y));
+	if (ImGui::Button("+", ImVec2(jobWidth, jobWidth)))
+	{
+		changeListener->Push(scenario);
+		scenario.jobs.addServer();
+		scenario.isDirty = true;
+	}
+
+	tlCorner.y += jobWidth;
+
 	float jobChartBottom = tlCorner.y;
+
 	tlCorner.y += borderPadding;
 
 	br.y = tlCorner.y;
 
 	float horizontalPos = tl.x + borderPadding;
 	dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
-	i = 0;
-	for_each(jd.syncPoints.begin(), jd.syncPoints.end(), [&](int& syncPoint) {
 
+	for (size_t i = 0; i < scenario.syncPoints.size(); i++)
+	{
 		if (io.MouseDown[0])
 		{
 			if (selectedSyncPoint < 0)
 			{
 				if ((io.MousePos.y > tl.y && io.MousePos.y < br.y) && (io.MousePos.x > tl.x && io.MousePos.x < br.x))
 				{
-					float dist = io.MousePos.x - (tl.x + borderPadding + (syncPoint * timeScale));
+					float dist = io.MousePos.x - (tl.x + borderPadding + (scenario.syncPoints[i] * timeScale));
 					if (dist < 0.0f)
 						dist = -dist;
 					if (dist <= 4.0f)
@@ -193,37 +245,24 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 			}
 			else if (selectedSyncPoint == i)
 			{
-				jd.isDirty = true;
-
-				syncPoint += io.MouseDelta.x / timeScale;
-
-				for (size_t j = 0; j < jd.syncPoints.size(); j++)
-				{
-					if (i != j)
-					{
-						if (jd.syncPoints[j] > jd.syncPoints[i])
-						{
-							float temp2 = jd.syncPoints[i];
-							jd.syncPoints[i] = jd.syncPoints[j];
-							jd.syncPoints[i] = temp2;
-						}
-					}
-				}
+				scenario.isDirty = true;
+				scenario.syncPoints[i] += io.MouseDelta.x / timeScale;
 			}
 		}
 		else
 		{
 			if (selectedSyncPoint == i)
 			{
-				changeListener->Push(jd);
+				changeListener->Push(scenario);
 				selectedSyncPoint = -1;
+
+				sort(scenario.syncPoints.begin(), scenario.syncPoints.end());
 			}
 		}
 
-		horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
+		horizontalPos = tl.x + borderPadding + (scenario.syncPoints[i] * timeScale);
 		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
-		i++;
-	});
+	}
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 
@@ -233,18 +272,23 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 	ImGui::SetCursorScreenPos(tl);
 	ImGui::InvisibleButton("Background", ImVec2(reg.x, tlCorner.y - tl.y));
 
+	if (removeServerI >= 0)
+	{
+		scenario.jobs.removeServer(removeServerI);
+	}
+
 	//ImGui::ColorEdit3("Job color", colors[selectedJob]);
 
-	if (selectedJobPtr)
+	/*if (selectedJobPtr)
 	{
 		float jobTime = floorf((float)*selectedJobPtr) / VAL_DEF;
 
 		if (ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f))
 		{
-			changeListener->Push(jd);
+			changeListener->Push(scenario);
 			*selectedJobPtr = jobTime * VAL_DEF;
 		}
-	}
+	}*/
 
 	ImGuiStyle style = ImGui::GetStyle();
 
@@ -257,7 +301,7 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 			delete snapshot;
 			snapshot = NULL;
 		}
-		snapshot = new JobRun(jd);
+		snapshot = new JobRun(scenario);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Hide", ImVec2(itemWidth, 0)))
@@ -282,21 +326,20 @@ void ScheduleEditor::DrawJobRun(JobRun & jobRun)
 	ImVec2 tlCorner(tl);
 
 
-	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (jobRun.data.jobs.size() - 1)) + (jobWidth * jobRun.data.jobs.size())), BACKGROUND_COLOR);
+	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (jobRun.data.jobs.serverCount() - 1)) + (jobWidth * jobRun.data.jobs.serverCount())), BACKGROUND_COLOR);
 
 	tlCorner.y += borderPadding;
 	float jobChartTop = tlCorner.y;
-	int i = 0;
-	for_each(jobRun.data.jobs.begin(), jobRun.data.jobs.end(), [&](vector<int>& jobs) {
-
+	for (size_t i = 0; i < jobRun.data.jobs.serverCount(); i++)
+	{
 		tlCorner.x = tl.x + borderPadding;
 
-		int j = 0;
 		int colI = 0;
 		float preceedingEnd = tlCorner.x;
-		for_each(jobs.begin(), jobs.end(), [&](int& job) {
 
-			float jobLength = job * timeScale;
+		for (size_t j = 0; j < jobRun.data.jobs.jobCount(i); j++)
+		{
+			float jobLength = jobRun.data.jobs.getJob(i, j) * timeScale;
 
 			ImVec4 col;
 			col.x = colors[colI][0];
@@ -324,15 +367,16 @@ void ScheduleEditor::DrawJobRun(JobRun & jobRun)
 
 			preceedingEnd = brCorner.x;
 			colI = (colI + 1) % MAX_JOBS;
-			j++;
-		});
+
+		}
+
 		tlCorner.y += jobWidth;
-		if (i < jobRun.data.jobs.size() - 1)
+		if (i < jobRun.data.jobs.serverCount() - 1)
 		{
 			tlCorner.y += jobSpacing;
 		}
-		i++;
-	});
+	}
+
 	float jobChartBottom = tlCorner.y;
 	tlCorner.y += borderPadding;
 
@@ -340,11 +384,11 @@ void ScheduleEditor::DrawJobRun(JobRun & jobRun)
 
 	float horizontalPos = tl.x + borderPadding;
 	dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
-	for_each(jobRun.data.syncPoints.begin(), jobRun.data.syncPoints.end(), [&](int& syncPoint) {
-
-		horizontalPos = tl.x + borderPadding + (syncPoint * timeScale);
+	for (size_t i = 0; i < jobRun.data.syncPoints.size(); i++)
+	{
+		horizontalPos = tl.x + borderPadding + (jobRun.data.syncPoints[i] * timeScale);
 		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
-	});
+	}
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 	ImGui::InvisibleButton("Background", ImVec2(reg.x, tlCorner.y - tl.y));

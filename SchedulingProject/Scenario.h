@@ -10,13 +10,13 @@ class Scenario
 public:
 	Scenario();
 	Scenario(const Scenario& scenario);
-	Scenario(Jobs jobs, vector<ValType> syncPoints);
+	Scenario(Jobs jobs, vector<ValType> syncPoints, ValType t);
 	~Scenario();
 
 	void SaveToFile(string filePath);
-	void MinimizeIdletime();
 	static Scenario LoadFromFile(string filePath);
 
+	ValType t;
 	Jobs jobs;
 	vector<ValType> syncPoints;
 

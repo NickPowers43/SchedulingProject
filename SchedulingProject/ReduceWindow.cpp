@@ -115,15 +115,15 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 			}
 			else
 			{
-				//get result
-				ReduceResults results = activeReducer->GetResult();
-				jd.syncPoints = results.syncPoints;
-				idleTime = results.idleTime;
-				//syncPointCount = jd.syncPoints.size();
-				finiteCaseTimes = results.finiteCaseTimes;
-				finiteCases = finiteCaseTimes.size();
-				totalCases = results.casesExplored;
-				jd.isDirty = true;
+				////get result
+				//ReduceResults results = activeReducer->GetResult();
+				//jd.syncPoints = results.syncPoints;
+				//idleTime = results.idleTime;
+				////syncPointCount = jd.syncPoints.size();
+				//finiteCaseTimes = results.finiteCaseTimes;
+				//finiteCases = finiteCaseTimes.size();
+				//totalCases = results.casesExplored;
+				//jd.isDirty = true;
 
 
 				activeReducer = NULL;
@@ -134,13 +134,13 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		{
 			if (ImGui::Button("Reduce"))
 			{
-				changeListener->Push(jd);
+				changeListener->Push(scenario);
 
-				activeReducer = reducers[reducerPreference];
+				/*activeReducer = reducers[reducerPreference];
 
 				reducerThread = thread([&]() {
 					activeReducer->Reduce(jd.jobs, jd.syncPoints.size());
-				});
+				});*/
 			}
 		}
 
