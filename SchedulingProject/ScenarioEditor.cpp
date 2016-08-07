@@ -369,7 +369,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 			float jobTime = floorf((float)jobLength) / VAL_DEF;
 
 			ImGui::SameLine();
-			if (ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f))
+			if (ImGui::InputFloat("Job", &jobTime, 0.05f, 0.25f))
 			{
 				changeListener->Push(scenario);
 				jobLength = jobTime * VAL_DEF;
@@ -387,6 +387,13 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 	ImGui::SameLine();
 	if (scenario.useT)
 	{
+		float t = floorf((float)scenario.t) / VAL_DEF;
+		if (ImGui::InputFloat("T", &t, 0.05f, 0.25f))
+		{
+			changeListener->Push(scenario);
+			scenario.t = t * VAL_DEF;
+		}
+		ImGui::SameLine();
 		if (ImGui::Button("Don't use T"))
 		{
 			scenario.useT = false;
