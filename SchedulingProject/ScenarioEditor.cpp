@@ -337,6 +337,29 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 
 	//ImGui::ColorEdit3("Job color", colors[selectedJob]);
 
+	ImGuiStyle style = ImGui::GetStyle();
+
+	float itemWidth = (reg.x - (8.0f * style.ItemSpacing.x)) / 8.0f;
+
+	if (ImGui::Button("Capture", ImVec2(itemWidth, 0)))
+	{
+		if (snapshot)
+		{
+			delete snapshot;
+			snapshot = NULL;
+		}
+		snapshot = new JobRun(scenario);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Hide", ImVec2(itemWidth, 0)))
+	{
+		if (snapshot)
+		{
+			delete snapshot;
+			snapshot = NULL;
+		}
+	}
+
 	if ((selectedServer >= 0) && (selectedJob >= 0))
 	{
 		if (selectedServer < scenario.jobs.serverCount() && selectedJob < scenario.jobs.jobCount(selectedServer))
@@ -361,35 +384,13 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 		}
 	}
 
-	ImGuiStyle style = ImGui::GetStyle();
-
-	float itemWidth = (reg.x - (8.0f * style.ItemSpacing.x)) / 8.0f;
-
-	if (ImGui::Button("Capture", ImVec2(itemWidth, 0)))
-	{
-		if (snapshot)
-		{
-			delete snapshot;
-			snapshot = NULL;
-		}
-		snapshot = new JobRun(scenario);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Hide", ImVec2(itemWidth, 0)))
-	{
-		if (snapshot)
-		{
-			delete snapshot;
-			snapshot = NULL;
-		}
-	}
-
 	ImGui::SameLine();
 	if (scenario.useT)
 	{
 		if (ImGui::Button("Don't use T"))
 		{
 			scenario.useT = false;
+			scenario.isDirty = true;
 		}
 	}
 	else
@@ -406,6 +407,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 				scenario.t = VAL_DEF;
 			}*/
 			scenario.useT = true;
+			scenario.isDirty = true;
 		}
 	}
 

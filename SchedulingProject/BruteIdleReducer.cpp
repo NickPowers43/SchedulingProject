@@ -30,16 +30,21 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 	minResult.result.idleTime = VAL_INF;
 	minResult.result.casesExplored = 0;
 
-	size_t casesExplored = 0;
-	vector<ValType> finiteCaseIdleTimes;
-
 	if (remainingSyncPoints == 0)
 	{
-		if (useT)
+		//we now have a complete configuration
+
+		if (!useT)
 		{
 			if (jobs.MaxJobCount() > 1)
 			{
 				minResult.result.casesExplored = 1;
+			}
+			else
+			{
+				minResult.result.idleTime = VAL_ZERO;
+				minResult.result.casesExplored = 1;
+				minResult.result.finiteCaseTimes.push_back(VAL_ZERO);
 			}
 		}
 		else
@@ -68,52 +73,59 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 	}
 	else
 	{
+		size_t casesExplored = 0;
+		vector<ValType> finiteCaseIdleTimes;
+
 		for (size_t i = 0; i < jobs.serverCount(); i++)
 		{
-			if (jobs.jobCount(i) > 1)
+			if (jobs.jobCount(i) > 0)
 			{
 				ValType syncPoint = jobs.getJob(i, 0);
 
-				if (syncPoint < t && (remainingSyncPoints > 0))
+				if (useT)
 				{
-					Jobs jobs2;
-					ValType idleTime = VAL_ZERO;
-					jobs.jobsAfter(syncPoint, jobs2, idleTime);
-
-					//cut schedule at sync point at the end point of the first job of the ith server
-					ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1, t - syncPoint);
-
-					casesExplored += subResult.casesExplored;
-
-					if (subResult.idleTime < VAL_INF)
+					if (syncPoint >= t)
 					{
-						subResult.idleTime += idleTime;
-
-						for (size_t j = 0; j < subResult.finiteCaseTimes.size(); j++)
-						{
-							subResult.finiteCaseTimes[j] += idleTime;
-						}
-						finiteCaseIdleTimes.insert(finiteCaseIdleTimes.end(), subResult.finiteCaseTimes.begin(), subResult.finiteCaseTimes.end());
-
-						//sort
-						if (subResult.idleTime < minResult.idletime)
-						{
-							minResult.idletime = subResult.idleTime;
-							minResult.result = subResult;
-							minResult.syncPoint = syncPoint;
-						}
-						//
+						continue;
 					}
+				}
+
+				Jobs jobs2;
+				ValType idleTime = VAL_ZERO;
+				jobs.jobsAfter(syncPoint, jobs2, idleTime);
+
+				//cut schedule at sync point at the end point of the first job of the ith server
+				ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1, t - syncPoint);
+
+				casesExplored += subResult.casesExplored;
+
+				if (subResult.idleTime < VAL_INF)
+				{
+					subResult.idleTime += idleTime;
+
+					for (size_t j = 0; j < subResult.finiteCaseTimes.size(); j++)
+					{
+						subResult.finiteCaseTimes[j] += idleTime;
+					}
+					finiteCaseIdleTimes.insert(finiteCaseIdleTimes.end(), subResult.finiteCaseTimes.begin(), subResult.finiteCaseTimes.end());
+
+					//sort
+					if (subResult.idleTime < minResult.idletime)
+					{
+						minResult.idletime = subResult.idleTime;
+						minResult.result = subResult;
+						minResult.syncPoint = syncPoint;
+					}
+					//
 				}
 			}
 		}
 
 		if (minResult.idletime < VAL_INF)
 		{
-			//configurations were found in sub problems
+			//finite configurations were found
 
 			minResult.result.finiteCaseTimes = finiteCaseIdleTimes;
-			minResult.result.casesExplored = casesExplored;
 
 			for (size_t i = 0; i < minResult.result.syncPoints.size(); i++)
 			{
@@ -121,12 +133,14 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 			}
 			minResult.result.syncPoints.insert(minResult.result.syncPoints.begin(), minResult.syncPoint);
 		}
+
+		minResult.result.casesExplored = casesExplored;
 	}
 
 	return minResult.result;
 }
 
-void BruteIdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
+void BruteIdleReducer::Reduce(Scenario scenario)
 {
 	running = true;
 	cancelled = false;
@@ -134,7 +148,9 @@ void BruteIdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
 
 	//syncPointCount = (syncPointCount < (jobs[0].size() - 1)) ? jobs[0].size() - 1 : syncPointCount;
 
-	result = CalculateOptimal(jobs, syncPointCount, t);
+	useT = scenario.useT;
+
+	result = CalculateOptimal(scenario.jobs, scenario.syncPoints.size(), scenario.t);
 
 	//sort(result.finiteCaseTimes.begin(), result.finiteCaseTimes.end());
 
@@ -143,5 +159,5 @@ void BruteIdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
 }
 void BruteIdleReducer::OnGUI()
 {
-	ImGui::Checkbox("Use T", &useT);
+	//ImGui::Checkbox("Use T", &useT);
 }

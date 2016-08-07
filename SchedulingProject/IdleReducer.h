@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Jobs.h"
+#include "Scenario.h"
 #include <vector>
 
 using namespace std;
@@ -27,7 +27,7 @@ public:
 	void Cancel();
 	void SetProgress(float progress);
 	void SetRunning(bool state);
-	virtual void Reduce(Jobs jobs, size_t syncPointCount, ValType t);
+	virtual void Reduce(Scenario scenario);
 	virtual void OnGUI();
 
 protected:

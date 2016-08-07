@@ -22,6 +22,15 @@ map<int, IdleReducer*> reducers = {
 	{ REDUCER_ONE_EXTRA, static_cast<IdleReducer*>(new OneExtraIdleReducer()) }
 };
 
+void ReduceFunction(IdleReducer* reducer, Scenario* scenarioP)
+{
+	reducer->Reduce(*scenarioP);
+
+	//Scenario* scenarioP = new Scenario(scenario);
+
+	delete scenarioP;
+}
+
 ReduceWindow::ReduceWindow(ScheduleChangeListener* changeListener) : changeListener(changeListener)
 {
 	reducerPreference = REDUCER_BRUTE;
@@ -147,9 +156,11 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 
 				activeReducer->SetRunning(true);
 
-				reducerThread = thread([&]() {
-					activeReducer->Reduce(scenario.jobs, scenario.syncPoints.size(), scenario.t);
-				});
+				Scenario* temp = new Scenario(scenario);
+				reducerThread = thread(ReduceFunction, activeReducer, temp);
+				/*reducerThread = thread([&]() {
+					activeReducer->Reduce(temp);
+				});*/
 
 				waitingResult = true;
 			}

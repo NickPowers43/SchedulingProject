@@ -259,14 +259,14 @@ ReduceResults ReduceAdjust(vector<ServerRecord> & servers)
 	return minResult.result;
 }
 
-void OneExtraIdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
+void OneExtraIdleReducer::Reduce(Scenario scenario)
 {
 	running = true;
 	cancelled = false;
 	finished = false;
 
 	vector<ServerRecord> servers;
-	for (size_t i = 0; i < jobs.serverCount(); i++)
+	for (size_t i = 0; i < scenario.jobs.serverCount(); i++)
 	{
 		servers.push_back(ServerRecord());
 		servers[i].jobs = vector<ValType>();

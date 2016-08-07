@@ -50,7 +50,7 @@ void IdleReducer::SetRunning(bool state)
 	running = state;
 }
 
-void IdleReducer::Reduce(Jobs jobs, size_t syncPointCount, ValType t)
+void IdleReducer::Reduce(Scenario scenario)
 {
 }
 void IdleReducer::OnGUI()

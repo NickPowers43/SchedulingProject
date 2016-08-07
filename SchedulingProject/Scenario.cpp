@@ -16,10 +16,6 @@ Scenario::Scenario() : jobs(vector<vector<ValType>>())
 {
 	isDirty = true;
 }
-Scenario::Scenario(const Scenario & scenario) : jobs(scenario.jobs), syncPoints(scenario.syncPoints), t(scenario.t), useT(scenario.useT)
-{
-	isDirty = true;
-}
 Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints, ValType t, bool useT) : jobs(jobs), syncPoints(syncPoints), t(t), useT(useT)
 {
 }

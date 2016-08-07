@@ -9,7 +9,7 @@ public:
 	BruteIdleReducer();
 	~BruteIdleReducer();
 
-	void Reduce(Jobs jobs, size_t syncPointCount, ValType t);
+	void Reduce(Scenario scenario);
 	void OnGUI();
 
 private:

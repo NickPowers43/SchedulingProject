@@ -49,46 +49,42 @@ void JobRun::Simulate()
 
 			jobStarts[i][0] = VAL_ZERO;
 
+			bool search = true;
 			for (size_t jobI = 1; jobI < data.jobs.jobCount(i); jobI++)
 			{
-				while (syncI < data.syncPoints.size() && data.syncPoints[syncI] < idleStart)
+				if (search)
 				{
-					syncI++;
-				}
-
-				if (syncI < data.syncPoints.size())
-				{
-					ValType difference = data.syncPoints[syncI] - idleStart;
-					idleTime += difference;//calculate idle time
-					idleStart += difference;
-
-					lastJob[i] = jobI + 1;
-				}
-				else
-				{
-					if (syncI == data.syncPoints.size())
+					while (syncI < data.syncPoints.size() && data.syncPoints[syncI] < idleStart)
 					{
-						//this will only happen once
+						syncI++;
+					}
+
+					if (syncI < data.syncPoints.size())
+					{
+						ValType difference = data.syncPoints[syncI] - idleStart;
+						idleTime += difference;//calculate idle time
+						idleStart += difference;
+
+						lastJob[i] = jobI;
+					}
+					else
+					{
 						if (data.useT)
 						{
 							if (idleStart < data.t)
 							{
 								idleTime += data.t - idleStart;
 								idleStart = data.t;
-								lastJob[i] = jobI - 1;
-							}
-							else
-							{
-								lastJob[i] = jobI - 1;
 							}
 						}
 						else
 						{
 							//no more sync points for this job
 							idleTime = VAL_INF;
-							lastJob[i] = jobI - 1;
 						}
-						syncI++;
+
+						lastJob[i] = jobI - 1;
+						search = false;
 					}
 				}
 
@@ -103,7 +99,10 @@ void JobRun::Simulate()
 		}
 		else
 		{
-			idleTime += data.t;
+			if (data.useT)
+			{
+				idleTime += data.t;
+			}
 		}
 	}
 }
