@@ -54,9 +54,8 @@ ScheduleEditor::ScheduleEditor(ScheduleChangeListener* changeListener) : changeL
 	colorCount = MAX_JOBS;
 
 
-	selectedServer = 0;
-	selectedJob = 0;
-	selectedJobPtr = NULL;
+	selectedServer = -1;
+	selectedJob = -1;
 
 	selectedSyncPoint = -1;
 
@@ -333,16 +332,29 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 
 	//ImGui::ColorEdit3("Job color", colors[selectedJob]);
 
-	/*if (selectedJobPtr)
+	if ((selectedServer >= 0) && (selectedJob >= 0))
 	{
-		float jobTime = floorf((float)*selectedJobPtr) / VAL_DEF;
-
-		if (ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f))
+		if (selectedServer < scenario.jobs.serverCount() && selectedJob < scenario.jobs.jobCount(selectedServer))
 		{
-			changeListener->Push(scenario);
-			*selectedJobPtr = jobTime * VAL_DEF;
+			ValType jobLength = scenario.jobs.getJob(selectedServer, selectedJob);
+
+			float jobTime = floorf((float)jobLength) / VAL_DEF;
+
+			ImGui::SameLine();
+			if (ImGui::InputFloat("Job time", &jobTime, 0.05f, 0.25f))
+			{
+				changeListener->Push(scenario);
+				jobLength = jobTime * VAL_DEF;
+
+				scenario.jobs.setJob(selectedServer, selectedJob, jobLength);
+			}
 		}
-	}*/
+		else
+		{
+			selectedServer = -1;
+			selectedJob = -1;
+		}
+	}
 
 	ImGuiStyle style = ImGui::GetStyle();
 

@@ -21,7 +21,7 @@ public:
 
 	int selectedServer;
 	int selectedJob;
-	int* selectedJobPtr;
+
 	int selectedSyncPoint;
 
 	bool tLineSelected;
