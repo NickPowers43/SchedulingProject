@@ -58,38 +58,45 @@ void JobRun::Simulate()
 
 				if (syncI < data.syncPoints.size())
 				{
-					idleTime += data.syncPoints[syncI] - idleStart;//calculate idle time
+					ValType difference = data.syncPoints[syncI] - idleStart;
+					idleTime += difference;//calculate idle time
+					idleStart += difference;
 
 					lastJob[i] = jobI + 1;
-					jobStarts[i][jobI] = data.syncPoints[syncI];//set its start position to sync point
-					idleStart = data.syncPoints[syncI] + data.jobs.getJob(i, jobI);//set next start position to end of this job
 				}
 				else
 				{
 					if (syncI == data.syncPoints.size())
 					{
-						if (idleStart < data.t)
+						//this will only happen once
+						if (data.useT)
 						{
-							//this will only happen once
-							idleTime += data.t - idleStart;
-							idleStart = data.t;
-							lastJob[i] = jobI;
+							if (idleStart < data.t)
+							{
+								idleTime += data.t - idleStart;
+								idleStart = data.t;
+								lastJob[i] = jobI - 1;
+							}
+							else
+							{
+								lastJob[i] = jobI - 1;
+							}
 						}
 						else
 						{
-							lastJob[i] = jobI + 1;
+							//no more sync points for this job
+							idleTime = VAL_INF;
+							lastJob[i] = jobI - 1;
 						}
 						syncI++;
 					}
-					//no more sync points for this job
-					//idleTime = INFINITY;
-
-					jobStarts[i][jobI] = idleStart;//set its start position to end of prev job
-					idleStart += data.jobs.getJob(i, jobI);//set next start position to end of this job
 				}
+
+				jobStarts[i][jobI] = idleStart;//set its start position
+				idleStart += data.jobs.getJob(i, jobI);//set next start position to end of this job
 			}
 
-			if (idleStart < data.t)
+			if (data.useT && idleStart < data.t)
 			{
 				idleTime += data.t - idleStart;
 			}

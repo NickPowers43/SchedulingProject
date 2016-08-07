@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ScheduleEditor.h"
+#include "ScenarioEditor.h"
 
 #include "imgui.h"
 #include <algorithm>
@@ -17,7 +17,7 @@ static float jobSpacing = 5.0f * UIScale;
 static float syncLineThickness = 2.0f * UIScale;
 static float syncLineRunoff = 15.0f * UIScale;
 
-ScheduleEditor::ScheduleEditor(ScheduleChangeListener* changeListener) : changeListener(changeListener)
+ScenarioEditor::ScenarioEditor(ScheduleChangeListener* changeListener) : changeListener(changeListener)
 {
 	int hues[16] = {
 		0,
@@ -65,11 +65,11 @@ ScheduleEditor::ScheduleEditor(ScheduleChangeListener* changeListener) : changeL
 }
 
 
-ScheduleEditor::~ScheduleEditor()
+ScenarioEditor::~ScenarioEditor()
 {
 }
 
-void ScheduleEditor::OnGUI(Scenario & scenario)
+void ScenarioEditor::OnGUI(Scenario & scenario)
 {
 	if (snapshot)
 	{
@@ -126,7 +126,7 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 			ImVec2 brCorner(tlCornerJob.x + jobLength, tlCornerJob.y + jobWidth);
 
 
-			if (j < jr.lastJob[i])
+			if (j <= jr.lastJob[i])
 			{
 				//draw idle time before this job
 				dl->AddRectFilled(ImVec2(preceedingEnd, tlCornerJob.y), ImVec2(tlCornerJob.x, brCorner.y), IDLE_COLOR);
@@ -251,12 +251,15 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 				scenario.isDirty = true;
 				scenario.syncPoints[i] += io.MouseDelta.x / timeScale;
 
-				if (scenario.syncPoints[i] > scenario.t)
+				if (scenario.useT)
 				{
-					scenario.syncPoints[i] = scenario.t;
-					selectedSyncPoint = -1;
+					if (scenario.syncPoints[i] > scenario.t)
+					{
+						scenario.syncPoints[i] = scenario.t;
+						selectedSyncPoint = -1;
 
-					sort(scenario.syncPoints.begin(), scenario.syncPoints.end());
+						sort(scenario.syncPoints.begin(), scenario.syncPoints.end());
+					}
 				}
 			}
 		}
@@ -275,48 +278,50 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
 	}
 
-	if ((selectedSyncPoint < 0) && io.MouseDown[0])
+	if (scenario.useT)
 	{
-		if (!tLineSelected)
+		if ((selectedSyncPoint < 0) && io.MouseDown[0])
 		{
-			if ((io.MousePos.y > tl.y && io.MousePos.y < br.y) && (io.MousePos.x > tl.x && io.MousePos.x < br.x))
+			if (!tLineSelected)
 			{
-				float dist = io.MousePos.x - (tl.x + borderPadding + (scenario.t * timeScale));
-				if (dist < 0.0f)
-					dist = -dist;
-				if (dist <= 4.0f)
+				if ((io.MousePos.y > tl.y && io.MousePos.y < br.y) && (io.MousePos.x > tl.x && io.MousePos.x < br.x))
 				{
-					tLineSelected = true;
+					float dist = io.MousePos.x - (tl.x + borderPadding + (scenario.t * timeScale));
+					if (dist < 0.0f)
+						dist = -dist;
+					if (dist <= 4.0f)
+					{
+						tLineSelected = true;
+					}
+				}
+			}
+			else
+			{
+				scenario.isDirty = true;
+				scenario.t += io.MouseDelta.x / timeScale;
+
+				for (size_t i = 0; i < scenario.syncPoints.size(); i++)
+				{
+					if (scenario.syncPoints[i] > scenario.t)
+					{
+						scenario.syncPoints[i] = scenario.t;
+					}
 				}
 			}
 		}
 		else
 		{
-			scenario.isDirty = true;
-			scenario.t += io.MouseDelta.x / timeScale;
-
-			for (size_t i = 0; i < scenario.syncPoints.size(); i++)
+			if (tLineSelected)
 			{
-				if (scenario.syncPoints[i] > scenario.t)
-				{
-					scenario.syncPoints[i] = scenario.t;
-				}
+				changeListener->Push(scenario);
+				tLineSelected = false;
 			}
 		}
-	}
-	else
-	{
-		if (tLineSelected)
-		{
-			changeListener->Push(scenario);
-			tLineSelected = false;
-		}
+
+		horizontalPos = tl.x + borderPadding + (scenario.t * timeScale);
+		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_RED_COLOR, syncLineThickness);
 	}
 	
-
-	horizontalPos = tl.x + borderPadding + (scenario.t * timeScale);
-	dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_RED_COLOR, syncLineThickness);
-
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 
 	//this concludes the drawind code for the job run
@@ -379,6 +384,31 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 		}
 	}
 
+	ImGui::SameLine();
+	if (scenario.useT)
+	{
+		if (ImGui::Button("Don't use T"))
+		{
+			scenario.useT = false;
+		}
+	}
+	else
+	{
+		if (ImGui::Button("Use T"))
+		{
+			/*sort(scenario.syncPoints.begin(), scenario.syncPoints.end());
+			if (scenario.syncPoints.size())
+			{
+				scenario.t = scenario.syncPoints.back() + VAL_DEF;
+			}
+			else
+			{
+				scenario.t = VAL_DEF;
+			}*/
+			scenario.useT = true;
+		}
+	}
+
 	stringstream ss;
 
 	ss.str(string());
@@ -387,7 +417,7 @@ void ScheduleEditor::OnGUI(Scenario & scenario)
 }
 
 
-void ScheduleEditor::DrawJobRun(JobRun & jobRun)
+void ScenarioEditor::DrawJobRun(JobRun & jobRun)
 {
 	ImVec2 reg = ImGui::GetContentRegionAvail();
 	ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -423,7 +453,7 @@ void ScheduleEditor::DrawJobRun(JobRun & jobRun)
 			ImVec2 brCorner(tlCornerJob.x + jobLength, tlCornerJob.y + jobWidth);
 
 
-			if (j < jobRun.lastJob[i])
+			if (j <= jobRun.lastJob[i])
 			{
 				//draw idle time before this job
 				dl->AddRectFilled(ImVec2(preceedingEnd, tlCornerJob.y), ImVec2(tlCornerJob.x, brCorner.y), IDLE_COLOR);
@@ -464,4 +494,9 @@ void ScheduleEditor::DrawJobRun(JobRun & jobRun)
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);
 	ImGui::InvisibleButton("Background", ImVec2(reg.x, tlCorner.y - tl.y));
+}
+
+void ScenarioEditor::HandleTGUI()
+{
+
 }

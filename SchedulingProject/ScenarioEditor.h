@@ -5,11 +5,11 @@
 
 #include "ScheduleChangeListener.h"
 
-class ScheduleEditor
+class ScenarioEditor
 {
 public:
-	ScheduleEditor(ScheduleChangeListener* changeListener);
-	~ScheduleEditor();
+	ScenarioEditor(ScheduleChangeListener* changeListener);
+	~ScenarioEditor();
 
 	void OnGUI(Scenario & scenario);
 	void DrawJobRun(JobRun & jobRun);
@@ -29,5 +29,10 @@ public:
 	ScheduleChangeListener* changeListener;
 
 	JobRun* snapshot;
+
+private:
+
+	void HandleTGUI();
+
 };
 

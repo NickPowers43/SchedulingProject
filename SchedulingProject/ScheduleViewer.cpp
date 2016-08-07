@@ -97,7 +97,7 @@ ScheduleViewer::ScheduleViewer()
 	exJobs.back().push_back(38500);
 	exJobs.back().push_back(VAL_DEF);
 
-	jd = Scenario(exJobs, syncPoints, 10 * VAL_DEF);
+	jd = Scenario(exJobs, syncPoints, 10 * VAL_DEF, false);
 
 	settings.includeRedundantSyncPoints = false;
 
@@ -106,7 +106,7 @@ ScheduleViewer::ScheduleViewer()
 	miscWindow = new MiscScheduleWindow();
 	ScheduleChangeListener* changeListener = miscWindow->GetListener();
 	reduceWindow = new ReduceWindow(changeListener);
-	editorWindow = new ScheduleEditor(changeListener);
+	editorWindow = new ScenarioEditor(changeListener);
 	fileWindow = new ScheduleFileWindow(changeListener);
 	modificationWindow = new ScheduleModificationWindow(changeListener);
 }

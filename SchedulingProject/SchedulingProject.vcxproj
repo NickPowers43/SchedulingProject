@@ -167,7 +167,7 @@
     <ClInclude Include="OneExtraIdleReducer.h" />
     <ClInclude Include="ReduceWindow.h" />
     <ClInclude Include="ScheduleChangeListener.h" />
-    <ClInclude Include="ScheduleEditor.h" />
+    <ClInclude Include="ScenarioEditor.h" />
     <ClInclude Include="ScheduleFileWindow.h" />
     <ClInclude Include="ScheduleModificationWindow.h" />
     <ClInclude Include="ScheduleViewer.h" />
@@ -192,7 +192,7 @@
     <ClCompile Include="OneExtraIdleReducer.cpp" />
     <ClCompile Include="ReduceWindow.cpp" />
     <ClCompile Include="ScheduleChangeListener.cpp" />
-    <ClCompile Include="ScheduleEditor.cpp" />
+    <ClCompile Include="ScenarioEditor.cpp" />
     <ClCompile Include="ScheduleFileWindow.cpp" />
     <ClCompile Include="ScheduleModificationWindow.cpp" />
     <ClCompile Include="ScheduleViewer.cpp" />
