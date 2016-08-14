@@ -11,15 +11,18 @@
 
 #include "BruteIdleReducer.h"
 #include "OneExtraIdleReducer.h"
+#include "GreedyIdleReducer.h"
 
 using namespace std;
 
 #define REDUCER_BRUTE 0
 #define REDUCER_ONE_EXTRA 1
+#define REDUCER_GREEDY 2
 
 map<int, IdleReducer*> reducers = {
 	{ REDUCER_BRUTE, static_cast<IdleReducer*>(new BruteIdleReducer()) },
-	{ REDUCER_ONE_EXTRA, static_cast<IdleReducer*>(new OneExtraIdleReducer()) }
+	{ REDUCER_ONE_EXTRA, static_cast<IdleReducer*>(new OneExtraIdleReducer()) },
+	{ REDUCER_GREEDY, static_cast<IdleReducer*>(new GreedyIdleReducer()) }
 };
 
 void ReduceFunction(IdleReducer* reducer, Scenario* scenarioP)
@@ -139,14 +142,15 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		else
 		{
 			if (ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE) ||
-				ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA))
+				ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA) ||
+				ImGui::RadioButton("Greedy", &reducerPreference, REDUCER_GREEDY))
 			{
 				activeReducer = reducers[reducerPreference];
 			}
 
 			ImGuiStyle& style = ImGui::GetStyle();
 			float windowWidth = ImGui::GetWindowContentRegionWidth() - style.FramePadding.x;
-			ImGui::BeginChild("Reduce Parameters", ImVec2(windowWidth, 70), true);
+			ImGui::BeginChild("Reduce Parameters", ImVec2(windowWidth, 40), true);
 			activeReducer->OnGUI();
 			ImGui::EndChild();
 
