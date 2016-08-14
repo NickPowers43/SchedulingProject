@@ -15,7 +15,7 @@ BruteIdleReducer::~BruteIdleReducer()
 {
 }
 
-ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoints, ValType t)
+ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoints, ValType t, double progressInc)
 {
 	//sorting variables
 	struct SortingRecord
@@ -70,12 +70,17 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 			minResult.result.casesExplored = 1;
 			minResult.result.finiteCaseTimes.push_back(idleTime);
 		}
+
+		IncProgress(progressInc);
 	}
 	else
 	{
 		size_t casesExplored = 0;
 		vector<ValType> finiteCaseIdleTimes;
 
+		float subProgressInc = progressInc / jobs.serverCount();
+
+		int count = 0;
 		for (size_t i = 0; i < jobs.serverCount(); i++)
 		{
 			if (jobs.jobCount(i) > 0)
@@ -90,12 +95,14 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 					}
 				}
 
+				count++;
+
 				Jobs jobs2;
 				ValType idleTime = VAL_ZERO;
 				jobs.jobsAfter(syncPoint, jobs2, idleTime);
 
 				//cut schedule at sync point at the end point of the first job of the ith server
-				ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1, t - syncPoint);
+				ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1, t - syncPoint, subProgressInc);
 
 				casesExplored += subResult.casesExplored;
 
@@ -121,6 +128,8 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 			}
 		}
 
+		IncProgress(subProgressInc * (jobs.serverCount() - count));
+
 		if (minResult.idletime < VAL_INF)
 		{
 			//finite configurations were found
@@ -145,12 +154,13 @@ void BruteIdleReducer::Reduce(Scenario scenario)
 	running = true;
 	cancelled = false;
 	finished = false;
+	SetProgress(0.0);
 
 	//syncPointCount = (syncPointCount < (jobs[0].size() - 1)) ? jobs[0].size() - 1 : syncPointCount;
 
 	useT = scenario.useT;
 
-	result = CalculateOptimal(scenario.jobs, scenario.syncPoints.size(), scenario.t);
+	result = CalculateOptimal(scenario.jobs, scenario.syncPoints.size(), scenario.t, 1.0);
 
 	//sort(result.finiteCaseTimes.begin(), result.finiteCaseTimes.end());
 

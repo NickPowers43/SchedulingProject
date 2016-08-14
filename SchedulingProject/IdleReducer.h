@@ -25,7 +25,8 @@ public:
 	float GetProgress();
 	ReduceResults GetResult();
 	void Cancel();
-	void SetProgress(float progress);
+	void SetProgress(double progress);
+	void IncProgress(double amount);
 	void SetRunning(bool state);
 	virtual void Reduce(Scenario scenario);
 	virtual void OnGUI();
@@ -35,7 +36,7 @@ protected:
 	ReduceResults result;
 	bool cancelled;
 	bool running;
-	float progress;
+	double progress;
 	bool finished;
 };
 

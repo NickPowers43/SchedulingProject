@@ -41,9 +41,17 @@ void IdleReducer::Cancel()
 	cancelled = true;
 }
 
-void IdleReducer::SetProgress(float progress)
+void IdleReducer::SetProgress(double progress)
 {
 	IdleReducer::progress = progress;
+}
+void IdleReducer::IncProgress(double amount)
+{
+	progress += amount;
+	if (progress > 1.0f)
+	{
+		progress = 1.0f;
+	}
 }
 void IdleReducer::SetRunning(bool state)
 {

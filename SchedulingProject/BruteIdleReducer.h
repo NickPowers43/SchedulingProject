@@ -14,7 +14,7 @@ public:
 
 private:
 
-	ReduceResults CalculateOptimal(Jobs jobs, int remainingSyncPoints, ValType t);
+	ReduceResults CalculateOptimal(Jobs jobs, int remainingSyncPoints, ValType t, double progressInc);
 
 	bool useT;
 };

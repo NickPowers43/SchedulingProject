@@ -118,7 +118,10 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 				//draw progress bar
 				ImVec2 size(ImGui::GetContentRegionAvailWidth(), 25.0f);
 				ImVec2 pos = ImGui::GetCursorScreenPos();
-				ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + (size.x * 0.5f), pos.y + size.y), 0xffffffff); // fill
+
+				float progress = activeReducer->GetProgress();
+
+				ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + (size.x * progress), pos.y + size.y), 0xffffffff); // fill
 				ImGui::GetWindowDrawList()->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), 0xffffffff); // border
 				ImGui::Dummy(size);
 			}

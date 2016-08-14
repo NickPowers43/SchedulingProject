@@ -24,25 +24,32 @@ ReduceResults GreedyIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPo
 	}
 	else
 	{
-		//find the largest first job
 		int largestServer = -1;
-		for (size_t i = 0; i < jobs.serverCount(); i++)
+		ValType tempT;
+
+		if (remainingSyncPoints == 1)
 		{
-			if (jobs.jobCount(i))
+			tempT = t;
+		}
+		else
+		{
+			//find the largest first job
+			for (size_t i = 0; i < jobs.serverCount(); i++)
 			{
-				ValType currJob = jobs.getJob(i, 0);
-				if (currJob < t)
+				if (jobs.jobCount(i))
 				{
+					ValType currJob = jobs.getJob(i, 0);
 					if (largestServer < 0 || (currJob > jobs.getJob(largestServer, 0)))
 					{
 						largestServer = i;
 					}
 				}
 			}
+			tempT = jobs.getJob(largestServer, 0);
+			tempT = (tempT < t) ? tempT : t;
 		}
 
-
-		if (largestServer < 0)
+		if (remainingSyncPoints != 1 && largestServer < 0)
 		{
 			//no job to place syncPoint at
 			ReduceResults output;
@@ -53,33 +60,34 @@ ReduceResults GreedyIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPo
 		}
 		else
 		{
-			ValType tempT = jobs.getJob(largestServer, 0);
-			tempT = (tempT < t) ? tempT : t;
 
 			int best = -1;
 			ValType bestIdleTime = VAL_INF;
 			for (size_t j = 0; j < jobs.serverCount(); j++)
 			{
-				if (j != largestServer && jobs.jobCount(j) > 0)
+				if (jobs.jobCount(j) > 0)
 				{
-					vector<ValType> syncPoints;
-					syncPoints.push_back(jobs.getJob(j, 0));
-
-					Scenario tempScenario(jobs, syncPoints, tempT, true);
-					JobRun run(tempScenario);
-					run.Simulate();
-
-					if (best < 0 || run.idleTime < bestIdleTime)
+					if (j != largestServer && jobs.getJob(j, 0) < tempT)
 					{
-						best = j;
-						bestIdleTime = run.idleTime;
+						vector<ValType> syncPoints;
+						syncPoints.push_back(jobs.getJob(j, 0));
+
+						Scenario tempScenario(jobs, syncPoints, tempT, true);
+						JobRun run(tempScenario);
+						run.Simulate();
+
+						if (best < 0 || run.idleTime < bestIdleTime)
+						{
+							best = j;
+							bestIdleTime = run.idleTime;
+						}
 					}
 				}
 			}
 
 			if (best < 0)
 			{
-				//there is only one job left
+				//there is no job left
 				ReduceResults output;
 				output.idleTime = VAL_ZERO;
 				output.casesExplored = 1;
