@@ -23,12 +23,12 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 		ValType idletime;//key
 		ReduceResults result;
 		ValType syncPoint;
-	} minResult;
+	} min;
 	//
 
-	minResult.idletime = VAL_INF;
-	minResult.result.idleTime = VAL_INF;
-	minResult.result.casesExplored = 0;
+	min.idletime = VAL_INF;
+	min.result.idleTime = VAL_INF;
+	min.result.casesExplored = 0;
 
 	if (remainingSyncPoints == 0)
 	{
@@ -38,13 +38,13 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 		{
 			if (jobs.MaxJobCount() > 1)
 			{
-				minResult.result.casesExplored = 1;
+				min.result.casesExplored = 1;
 			}
 			else
 			{
-				minResult.result.idleTime = VAL_ZERO;
-				minResult.result.casesExplored = 1;
-				minResult.result.finiteCaseTimes.push_back(VAL_ZERO);
+				min.result.idleTime = VAL_ZERO;
+				min.result.casesExplored = 1;
+				min.result.finiteCaseTimes.push_back(VAL_ZERO);
 			}
 		}
 		else
@@ -66,9 +66,9 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 				}
 			}
 
-			minResult.result.idleTime = idleTime;
-			minResult.result.casesExplored = 1;
-			minResult.result.finiteCaseTimes.push_back(idleTime);
+			min.result.idleTime = idleTime;
+			min.result.casesExplored = 1;
+			min.result.finiteCaseTimes.push_back(idleTime);
 		}
 
 		IncProgress(progressInc);
@@ -117,11 +117,11 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 					finiteCaseIdleTimes.insert(finiteCaseIdleTimes.end(), subResult.finiteCaseTimes.begin(), subResult.finiteCaseTimes.end());
 
 					//sort
-					if (subResult.idleTime < minResult.idletime)
+					if (subResult.idleTime < min.idletime)
 					{
-						minResult.idletime = subResult.idleTime;
-						minResult.result = subResult;
-						minResult.syncPoint = syncPoint;
+						min.idletime = subResult.idleTime;
+						min.result = subResult;
+						min.syncPoint = syncPoint;
 					}
 					//
 				}
@@ -130,23 +130,23 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 
 		IncProgress(subProgressInc * (jobs.serverCount() - count));
 
-		if (minResult.idletime < VAL_INF)
+		if (min.idletime < VAL_INF)
 		{
 			//finite configurations were found
 
-			minResult.result.finiteCaseTimes = finiteCaseIdleTimes;
+			min.result.finiteCaseTimes = finiteCaseIdleTimes;
 
-			for (size_t i = 0; i < minResult.result.syncPoints.size(); i++)
+			for (size_t i = 0; i < min.result.syncPoints.size(); i++)
 			{
-				minResult.result.syncPoints[i] += minResult.syncPoint;
+				min.result.syncPoints[i] += min.syncPoint;
 			}
-			minResult.result.syncPoints.insert(minResult.result.syncPoints.begin(), minResult.syncPoint);
+			min.result.syncPoints.insert(min.result.syncPoints.begin(), min.syncPoint);
 		}
 
-		minResult.result.casesExplored = casesExplored;
+		min.result.casesExplored = casesExplored;
 	}
 
-	return minResult.result;
+	return min.result;
 }
 
 void BruteIdleReducer::Reduce(Scenario scenario)

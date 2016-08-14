@@ -74,6 +74,11 @@ void Jobs::jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime)
 				jobs2.back().push_back(jobs[j][k]);
 			}
 		}
+		else
+		{
+			//no jobs
+			idleTime += syncPoint;
+		}
 	}
 
 	output = Jobs(jobs2);
