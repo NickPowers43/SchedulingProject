@@ -99,7 +99,7 @@ ReduceResults BruteIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPoi
 
 				Jobs jobs2;
 				ValType idleTime = VAL_ZERO;
-				jobs.jobsAfter(syncPoint, jobs2, idleTime);
+				jobs.jobsAfter(syncPoint, jobs2, idleTime, useT);
 
 				//cut schedule at sync point at the end point of the first job of the ith server
 				ReduceResults subResult = CalculateOptimal(jobs2, remainingSyncPoints - 1, t - syncPoint, subProgressInc);

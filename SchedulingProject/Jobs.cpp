@@ -50,7 +50,7 @@ void Jobs::removeJob(int server, int index)
 	jobs[server].erase(jobs[server].begin() + index);
 }
 
-void Jobs::jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime)
+void Jobs::jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime, bool useT)
 {
 	idleTime = VAL_ZERO;
 	vector<vector<ValType>> jobs2;
@@ -74,7 +74,7 @@ void Jobs::jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime)
 				jobs2.back().push_back(jobs[j][k]);
 			}
 		}
-		else
+		else if(useT)
 		{
 			//no jobs
 			idleTime += syncPoint;

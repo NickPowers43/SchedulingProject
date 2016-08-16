@@ -22,7 +22,7 @@ public:
 	void removeServer(int server);
 	void removeJob(int server, int index);
 
-	void jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime);
+	void jobsAfter(ValType syncPoint, Jobs & output, ValType & idleTime, bool useT);
 	size_t MaxJobCount();
 
 private:

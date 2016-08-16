@@ -100,7 +100,7 @@ ReduceResults GreedyIdleReducer::CalculateOptimal(Jobs jobs, int remainingSyncPo
 
 				Jobs leftOver;
 				ValType idleTime;
-				jobs.jobsAfter(syncPoint, leftOver, idleTime);
+				jobs.jobsAfter(syncPoint, leftOver, idleTime, useT);
 
 				ReduceResults subResult = CalculateOptimal(leftOver, remainingSyncPoints - 1, t - syncPoint);
 
