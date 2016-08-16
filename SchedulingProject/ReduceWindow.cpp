@@ -153,9 +153,9 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 
 			ImGuiStyle& style = ImGui::GetStyle();
 			float windowWidth = ImGui::GetWindowContentRegionWidth() - style.FramePadding.x;
-			ImGui::BeginChild("Reduce Parameters", ImVec2(windowWidth, 40), true);
-			activeReducer->OnGUI();
-			ImGui::EndChild();
+			//ImGui::BeginChild("Reduce Parameters", ImVec2(windowWidth, 40), true);
+			//activeReducer->OnGUI();
+			//ImGui::EndChild();
 
 			if (ImGui::Button("Reduce"))
 			{
