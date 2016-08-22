@@ -25,17 +25,17 @@ ScenarioEditor::ScenarioEditor(ScheduleChangeListener* changeListener) : changeL
 		21,
 		87,
 		212,
-		56,
-		32,
+		142,
+		30,
 		130,
 		142,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0
+		164,
+		21,
+		87,
+		212,
+		142,
+		30
 	};
 
 
@@ -360,6 +360,8 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 		}
 	}
 
+	const int SPACING = 40;
+
 	if ((selectedServer >= 0) && (selectedJob >= 0))
 	{
 		if (selectedServer < scenario.jobs.serverCount() && selectedJob < scenario.jobs.jobCount(selectedServer))
@@ -369,6 +371,9 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 			float jobTime = floorf((float)jobLength) / VAL_DEF;
 
 			ImGui::SameLine();
+			ImGui::InvisibleButton("##InvButton3", ImVec2(SPACING, 0));
+			ImGui::SameLine();
+
 			if (ImGui::InputFloat("Job", &jobTime, 0.05f, 0.25f))
 			{
 				changeListener->Push(scenario);
@@ -385,15 +390,23 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 	}
 
 	ImGui::SameLine();
+	ImGui::InvisibleButton("##InvButton2", ImVec2(SPACING, 0));
+	ImGui::SameLine();
+
 	if (scenario.useT)
 	{
+
 		float t = floorf((float)scenario.t) / VAL_DEF;
 		if (ImGui::InputFloat("T", &t, 0.05f, 0.25f))
 		{
 			changeListener->Push(scenario);
 			scenario.t = t * VAL_DEF;
 		}
+
 		ImGui::SameLine();
+		ImGui::InvisibleButton("##InvButton4", ImVec2(SPACING, 0));
+		ImGui::SameLine();
+
 		if (ImGui::Button("Don't use T"))
 		{
 			scenario.useT = false;
@@ -421,8 +434,23 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 	stringstream ss;
 
 	ss.str(string());
-	ss << (jr.idleTime / (float)VAL_DEF);
-	ImGui::LabelText(ss.str().c_str(), "Idle time: ");
+	if (jr.idleTime == VAL_INF || jr.idleTime < 0)
+	{
+		ss << "inf";
+	}
+	else
+	{
+		ss << (jr.idleTime / (float)VAL_DEF);
+	}
+	ImGui::LabelText(ss.str().c_str(), "Idle time:");
+
+	ImGui::SameLine();
+	ImGui::InvisibleButton("##InvButton", ImVec2(100, 0));
+	ImGui::SameLine();
+
+	ss.str(string());
+	ss << jr.data.jobs.MaxJobCount();
+	ImGui::LabelText(ss.str().c_str(), "Max Job count:");
 }
 
 
@@ -499,6 +527,12 @@ void ScenarioEditor::DrawJobRun(JobRun & jobRun)
 	{
 		horizontalPos = tl.x + borderPadding + (jobRun.data.syncPoints[i] * timeScale);
 		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_COLOR, syncLineThickness);
+	}
+
+	if (jobRun.data.useT)
+	{
+		horizontalPos = tl.x + borderPadding + (jobRun.data.t * timeScale);
+		dl->AddLine(ImVec2(horizontalPos, jobChartTop - syncLineRunoff), ImVec2(horizontalPos, jobChartBottom + syncLineRunoff), LINE_RED_COLOR, syncLineThickness);
 	}
 
 	dl->AddRect(tl, ImVec2(tl.x + reg.x, tlCorner.y), LINE_COLOR);

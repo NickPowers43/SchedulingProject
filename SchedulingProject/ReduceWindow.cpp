@@ -85,8 +85,15 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		stringstream ss;
 
 		ss.str(string());
-		ss << (idleTime / (float)VAL_DEF);
-		ImGui::LabelText(ss.str().c_str(), "Idle time: ");
+		if (idleTime == VAL_INF || idleTime < 0)
+		{
+			ss << "inf";
+		}
+		else
+		{
+			ss << (idleTime / (float)VAL_DEF);
+		}
+		ImGui::LabelText(ss.str().c_str(), "Min idle time: ");
 
 		ss.str(string());
 		ss << finiteCases;
@@ -145,7 +152,7 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		else
 		{
 			if (ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE) ||
-				ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA) ||
+				//ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA) ||
 				ImGui::RadioButton("Greedy", &reducerPreference, REDUCER_GREEDY))
 			{
 				activeReducer = reducers[reducerPreference];
