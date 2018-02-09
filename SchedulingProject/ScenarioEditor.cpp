@@ -368,17 +368,13 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 		{
 			ValType jobLength = scenario.jobs.getJob(selectedServer, selectedJob);
 
-			float jobTime = floorf((float)jobLength) / VAL_DEF;
-
 			ImGui::SameLine();
 			ImGui::InvisibleButton("##InvButton3", ImVec2(SPACING, 0));
 			ImGui::SameLine();
 
-			if (ImGui::InputFloat("Job", &jobTime, 0.05f, 0.25f))
+			if (ImGui::InputInt("Job", &jobLength, 10, 100))
 			{
 				changeListener->Push(scenario);
-				jobLength = jobTime * VAL_DEF;
-
 				scenario.jobs.setJob(selectedServer, selectedJob, jobLength);
 			}
 		}
@@ -393,14 +389,16 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 	ImGui::InvisibleButton("##InvButton2", ImVec2(SPACING, 0));
 	ImGui::SameLine();
 
+	if (ImGui::InputFloat("UI Scale", &UIScale, 0.05f, 0.5f))
+	{
+		changeListener->Push(scenario);
+	}
+
 	if (scenario.useT)
 	{
-
-		float t = floorf((float)scenario.t) / VAL_DEF;
-		if (ImGui::InputFloat("T", &t, 0.05f, 0.25f))
+		if (ImGui::InputInt("T", &scenario.t, 10, 100))
 		{
 			changeListener->Push(scenario);
-			scenario.t = t * VAL_DEF;
 		}
 
 		ImGui::SameLine();
@@ -440,7 +438,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 	}
 	else
 	{
-		ss << (jr.idleTime / (float)VAL_DEF);
+		ss << jr.idleTime;
 	}
 	ImGui::LabelText(ss.str().c_str(), "Idle time:");
 

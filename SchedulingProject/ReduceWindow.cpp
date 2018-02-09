@@ -91,7 +91,7 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		}
 		else
 		{
-			ss << (idleTime / (float)VAL_DEF);
+			ss << idleTime;
 		}
 		ImGui::LabelText(ss.str().c_str(), "Min idle time: ");
 
