@@ -140,7 +140,7 @@ void ScheduleViewer::OnGUI()
 
 	float windowWidth = (ImGui::GetWindowContentRegionWidth() * 0.5f) - style.FramePadding.x;
 
-	const int FIRST_ROW_HEIGHT = 120;
+	const int FIRST_ROW_HEIGHT = 300;
 
 	ImGui::BeginChild("Reduce Window", ImVec2(windowWidth, FIRST_ROW_HEIGHT), true);
 

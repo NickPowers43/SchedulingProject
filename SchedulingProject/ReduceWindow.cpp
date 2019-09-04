@@ -11,16 +11,19 @@
 
 #include "BruteIdleReducer.h"
 #include "OneExtraIdleReducer.h"
+#include "HybridGreedyIdleReducer.h"
 #include "GreedyIdleReducer.h"
 
 using namespace std;
 
 #define REDUCER_BRUTE 0
-#define REDUCER_ONE_EXTRA 1
-#define REDUCER_GREEDY 2
+#define REDUCER_HYBRID_GREEDY 1
+#define REDUCER_ONE_EXTRA 2
+#define REDUCER_GREEDY 3
 
 map<int, IdleReducer*> reducers = {
 	{ REDUCER_BRUTE, static_cast<IdleReducer*>(new BruteIdleReducer()) },
+	{ REDUCER_HYBRID_GREEDY, static_cast<IdleReducer*>(new HybridGreedyIdleReducer()) },
 	{ REDUCER_ONE_EXTRA, static_cast<IdleReducer*>(new OneExtraIdleReducer()) },
 	{ REDUCER_GREEDY, static_cast<IdleReducer*>(new GreedyIdleReducer()) }
 };
@@ -152,6 +155,7 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		else
 		{
 			if (ImGui::RadioButton("Brute", &reducerPreference, REDUCER_BRUTE) ||
+				ImGui::RadioButton("Hybrid Greedy", &reducerPreference, REDUCER_HYBRID_GREEDY) ||
 				//ImGui::RadioButton("One Extra", &reducerPreference, REDUCER_ONE_EXTRA) ||
 				ImGui::RadioButton("Greedy", &reducerPreference, REDUCER_GREEDY))
 			{
@@ -189,6 +193,8 @@ void ReduceWindow::OnGUI(Scenario & scenario)
 		{
 			ExportCSV(filePath, finiteCaseTimes);
 		}
+
+		activeReducer->OnGUI();
 
 		//ImGui::PopItemWidth();
 	}

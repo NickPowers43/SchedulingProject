@@ -17,6 +17,10 @@ public:
 	ValType getJob(int server, int index);
 	void setJob(int server, int index, ValType value);
 
+	void split(Jobs &first, Jobs &remaining, int amount);
+	void add(Jobs &range);
+	ValType maxRunTime();
+
 	void addServer();
 	void addJob(int server, ValType length);
 	void removeServer(int server);

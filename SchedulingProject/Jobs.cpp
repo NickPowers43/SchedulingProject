@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Jobs.h"
+#include <algorithm>
 
 
 
@@ -31,6 +32,56 @@ ValType Jobs::getJob(int server, int index)
 void Jobs::setJob(int server, int index, ValType value)
 {
 	jobs[server][index] = value;
+}
+
+void Jobs::split(Jobs &first, Jobs &remaining, int amount)
+{
+	vector<vector<ValType>> nJobs;
+	vector<vector<ValType>> rJobs;
+	for (size_t i = 0; i < jobs.size(); i++)
+	{
+		nJobs.push_back(vector<ValType>());
+		int limit = std::min(amount, jobCount(i));
+		for (size_t j = 0; j < jobCount(i); j++)
+		{
+			if (j < amount) {
+				nJobs.back().push_back(getJob(i, j));
+			}
+			else {
+				rJobs.back().push_back(getJob(i, j));
+			}
+		}
+	}
+	first = Jobs(nJobs);
+	remaining = Jobs(rJobs);
+}
+
+void Jobs::add(Jobs & last)
+{
+	for (size_t i = 0; i < serverCount(); i++)
+	{
+		for (size_t j = 0; j < last.jobCount(i); j++)
+		{
+			addJob(i, last.getJob(i, j));
+		}
+	}
+}
+
+ValType Jobs::maxRunTime()
+{
+	//compute T
+	ValType m = VAL_ZERO;
+	for (size_t i = 0; i < serverCount(); i++)
+	{
+		ValType sum = VAL_ZERO;
+		for (size_t j = 0; j < jobCount(i); j++)
+		{
+			sum += getJob(i, j);
+		}
+		if (sum > m)
+			m = sum;
+	}
+	return m;
 }
 
 void Jobs::addServer()
