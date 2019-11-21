@@ -92,20 +92,23 @@ let jobSplitter (time: ValType) (t: ValType) (useT: bool) : List<ValType> -> Idl
             else (0, firstJob - time :: remainingJobs)
 
 // Idle time and optimal syncPoints given a time for first sync point
-let rec bestByTime (availableSyncPoints: int) (serverJobs: AllJobs) (t: ValType) (useT: bool) : ValType -> IdleTime * SyncPoints =
+let rec bestByTime (availableSyncPoints: int) (serverJobs: AllJobs) (t: ValType) (useT: bool) : ValType -> BruteForceSolution =
     if availableSyncPoints = 1
     then
         fun time ->
             let jobs = serverJobs |> List.map (jobSplitter time t useT)
 
+            let jobIdleTime (jobs: ServerJobs) =
+                if jobs.IsEmpty
+                then t
+                else (t - jobs.Head)
+
             let remainingIdleTime =
                 jobs
-                |> List.map snd
-                |> List.map (fun jobs -> if jobs.IsEmpty then t else (t - jobs.Head))
-                |> List.map (max 0)
-                |> List.sum
+                |> Seq.map (snd >> jobIdleTime >> (max 0))
+                |> Seq.sum
 
-            (sumIdleTime (jobs |> List.sumBy fst) remainingIdleTime, [time])
+            ([time], sumIdleTime (jobs |> List.sumBy fst) remainingIdleTime)
     else
         fun time ->
             let jobs = serverJobs |> List.map (jobSplitter time t useT)
@@ -114,15 +117,18 @@ let rec bestByTime (availableSyncPoints: int) (serverJobs: AllJobs) (t: ValType)
 
             let syncPoints = time :: (optimalSyncPoints |> List.map (fun p -> p + time))
 
-            (sumIdleTime (jobs |> List.sumBy fst) remainingIdleTime, syncPoints)
+            (syncPoints, sumIdleTime (jobs |> List.sumBy fst) remainingIdleTime)
 
 and minimizeBruteForce (availableSyncPoints: int) (serverJobs: AllJobs) (t: ValType) (useT: bool) : BruteForceSolution =
 
+    let lessThanT = (>) t
+
     let timeValues = 
         serverJobs
-        |> List.filter (not << List.isEmpty)
-        |> List.map (fun jobs -> jobs.Head)
-        |> if useT then List.filter (fun time -> time <= t) else id
+        |> Seq.filter (not << List.isEmpty)
+        |> Seq.map (fun jobs -> jobs.Head)
+        |> if useT then Seq.filter lessThanT else id
+        |> Seq.toList
         |> List.distinct
 
     if timeValues.IsEmpty && availableSyncPoints = 0 then ([], 0)
@@ -130,11 +136,9 @@ and minimizeBruteForce (availableSyncPoints: int) (serverJobs: AllJobs) (t: ValT
     elif timeValues.IsEmpty then ([], 0)
     else
         //try puting the first sync point a each time value. Find the one with least idle time
-        let idleTime, optimalSyncPoints =
-            timeValues
+        timeValues
             |> List.map (bestByTime availableSyncPoints serverJobs t useT)
             |> List.minBy fst
-        (optimalSyncPoints, idleTime)
 
 let idleTime (scenario: Scenario) : IdleTime =
 
@@ -172,7 +176,7 @@ let runBruteOptimizer path =
 [<EntryPoint>]
 let main argv =
 
-    runBruteOptimizer "pladd_instance_07"
+    runBruteOptimizer "random_scenario_a"
     
     let x = stdin.Read()
     
