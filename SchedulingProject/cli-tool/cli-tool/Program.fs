@@ -2,6 +2,12 @@
 // See the 'F# Tutorial' project for more help.
 
 open System.IO
+open System.Diagnostics
+
+open Microsoft.FSharp.Quotations
+open Microsoft.FSharp.Quotations.Patterns
+open Microsoft.FSharp.Quotations.DerivedPatterns
+
 
 type ValType = int
 type IdleTime = ValType
@@ -105,8 +111,8 @@ let rec bestByTime (availableSyncPoints: int) (serverJobs: AllJobs) (t: ValType)
 
             let remainingIdleTime =
                 jobs
-                |> Seq.map (snd >> jobIdleTime >> (max 0))
-                |> Seq.sum
+                |> List.map (snd >> jobIdleTime >> (max 0))
+                |> List.sum
 
             ([time], sumIdleTime (jobs |> List.sumBy fst) remainingIdleTime)
     else
@@ -125,10 +131,9 @@ and minimizeBruteForce (availableSyncPoints: int) (serverJobs: AllJobs) (t: ValT
 
     let timeValues = 
         serverJobs
-        |> Seq.filter (not << List.isEmpty)
-        |> Seq.map (fun jobs -> jobs.Head)
-        |> if useT then Seq.filter lessThanT else id
-        |> Seq.toList
+        |> List.filter (not << List.isEmpty)
+        |> List.map (fun jobs -> jobs.Head)
+        |> if useT then List.filter lessThanT else id
         |> List.distinct
 
     if timeValues.IsEmpty && availableSyncPoints = 0 then ([], 0)
@@ -166,6 +171,15 @@ let runBruteOptimizer path =
     printfn "original syncPoints: %A" scenario.syncPoints
 
     let optimalSyncPoints, minimumIdleTime = minimizeBruteForce scenario.syncPoints.Length scenario.jobs scenario.t scenario.useT
+    
+    let sw = new Stopwatch()
+    sw.Start()
+    for i = 1 to 1000 do
+        let _, _ = minimizeBruteForce scenario.syncPoints.Length scenario.jobs scenario.t scenario.useT
+        ()
+    sw.Stop()
+
+    printfn "Time to solve: %A" sw.ElapsedMilliseconds
 
     let optimalSolution = new Scenario(optimalSyncPoints, scenario.jobs, scenario.t, scenario.useT)
 
@@ -173,11 +187,109 @@ let runBruteOptimizer path =
 
     printfn "optimal syncPoints: %A" optimalSolution.syncPoints
 
+type PlaneIndex = uint32
+type CoefficientIndex = uint32
+type ExpressionIndex = uint32
+
+type UndefinedVar =
+    val public columnIndex: CoefficientIndex
+    new (columnIndex) = {
+        columnIndex = columnIndex
+    }
+
+type LinearExpr =
+    | LinearCombination
+    | GreaterThenElse of cond: LinearExpr * greater: LinearExpr * lessEqual: LinearExpr
+
+and LinearCombination = 
+    val coefficeints: ValType array
+
+and PieceWiseLinearExpr =
+    val boundaries: Set<PlaneIndex * ExpressionIndex>
+
+
+type Solver() =
+
+    let addVariable(): UndefinedVar =
+        UndefinedVar(0u) //TODO: implement
+
+    let minimize (objFunc: Expr) (objParams: obj list) =
+
+        let variableScope = None
+
+        let evalLinearExpr (expr: Expr) : LinearExpr =
+            match expr with
+            | IfThenElse(cond, ifTrueExpr, elseExpr) ->
+                //return an expression that splits the domain using "cond"
+
+                //let condVal = evalExpr cond
+                //if condVal.isUndefined
+                //then 
+                //else
+                0
+            | _ -> printfn "Not recognized"
+        
+        let processRootLambda (objFuncParams: Var list list) (body: Expr) =
+            printfn "lambda provided"
+            let mutable i = 0
+            for subParams in objFuncParams do
+                printfn "sub param %i" i
+                i <- i + 1
+                for p in subParams do
+                    printfn "param %A" p.Name
+            printfn "finished"
+
+        // evaluate and build expression tree that references defined and undefined variables
+        match objFunc with
+        | Lambdas(pl, body) -> processRootLambda pl body
+        | _ -> printfn "No lambda provided"
+
+let runBruteOptimizerLP path =
+    
+    //let scenario = loadScenario path
+    
+    let objectiveFunc = <@ fun (serverJobs: AllJobs) (syncPoints: SyncPoints) (t: ValType) ->
+    
+        let isIncreasing (arr: List<ValType>) =
+            arr.Length < 2 || (List.forall2 (fun a b -> a < b) arr.[..(arr.Length-2)] arr.[1..])
+        
+        let rec computeSingleServer (syncPoints: SyncPoints) (t: ValType) (jobs: ServerJobs) : ValType =
+            match (syncPoints, jobs) with
+            | (_, []) -> t
+            | (_, jobs) when jobs.Head >= t -> 0
+            | (_, [job]) -> t - job
+            | ([], jobs) -> t - jobs.Head
+            | (syncPoint :: rSyncPoints, jobs) ->
+                let tSyncPoints = lazy (rSyncPoints |> List.map (fun sp -> sp - syncPoint))
+                let tT = lazy (t - syncPoint)
+                if syncPoint < jobs.Head
+                then
+                    let tJobs = (jobs.Head - syncPoint) :: jobs.Tail
+                    computeSingleServer (tSyncPoints.Force()) (tT.Force()) tJobs
+                else
+                    if syncPoint < (t - jobs.[1])
+                    then
+                        let tJobs = jobs.Tail |> List.map (fun j -> j - syncPoint)
+                        t - jobs.Head - jobs.[1] + (computeSingleServer (tSyncPoints.Force()) (tT.Force()) tJobs)
+                    else
+                        t - jobs.Head - tT.Force()
+    
+        if (isIncreasing syncPoints)
+        then
+            let idleTime =
+                serverJobs
+                |> List.map (computeSingleServer syncPoints t)
+                |> List.sum
+            Some(idleTime)
+        else None @>
+    
+    minimizer objectiveFunc []
+
 [<EntryPoint>]
 let main argv =
 
-    runBruteOptimizer "random_scenario_a"
-    
+    runBruteOptimizerLP "pladd_instance_07"
+
     let x = stdin.Read()
     
     0 // return an integer exit code
