@@ -13,7 +13,7 @@ public:
 
 	Scenario data;
 	vector<vector<ValType>> jobStarts;
-	vector<int> lastJob;
+	vector<size_t> lastJob;
 
 	ValType idleTime;
 };

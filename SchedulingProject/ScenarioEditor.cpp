@@ -17,7 +17,7 @@ static float jobSpacing = 5.0f * UIScale;
 static float syncLineThickness = 2.0f * UIScale;
 static float syncLineRunoff = 15.0f * UIScale;
 
-ScenarioEditor::ScenarioEditor(ScheduleChangeListener* changeListener) : changeListener(changeListener)
+ScenarioEditor::ScenarioEditor(ScheduleChangeListener* changeListener) : changeListener(changeListener), jr()
 {
 	int hues[16] = {
 		0,
@@ -95,7 +95,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 
 	float timeScale = reg.x * UIScale / 5.0f / VAL_DEF / 10.0f;
 
-	int rows = scenario.jobs.serverCount() + 1;
+	size_t rows = scenario.jobs.serverCount() + 1;
 	dl->AddRectFilled(tl, ImVec2(tl.x + reg.x, tl.y + (2.0f * borderPadding) + (jobSpacing * (rows - 1)) + (jobWidth * rows)), BACKGROUND_COLOR);
 
 	int removeServerI = -1;
@@ -109,8 +109,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 		ss << i;
 		dl->AddText(tlCorner, 0xffffffff, ss.str().c_str());
 		tlCorner.x += jobWidth;*/
-		int j = 0;
-		int colI = 0;
+		size_t colI = 0;
 		float preceedingEnd = tlCorner.x;
 		for (size_t j = 0; j < scenario.jobs.jobCount(i); j++)
 		{
@@ -360,7 +359,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 		}
 	}
 
-	const int SPACING = 40;
+	const size_t SPACING = 40;
 
 	if ((selectedServer >= 0) && (selectedJob >= 0))
 	{
@@ -369,7 +368,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 			ValType jobLength = scenario.jobs.getJob(selectedServer, selectedJob);
 
 			ImGui::SameLine();
-			ImGui::InvisibleButton("##InvButton3", ImVec2(SPACING, 0));
+			ImGui::InvisibleButton("##InvButton3", ImVec2(SPACING, 1));
 			ImGui::SameLine();
 
 			if (ImGui::InputInt("Job", &jobLength, 10, 100))
@@ -386,7 +385,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 	}
 
 	ImGui::SameLine();
-	ImGui::InvisibleButton("##InvButton2", ImVec2(SPACING, 0));
+	ImGui::InvisibleButton("##InvButton2", ImVec2(SPACING, 1));
 	ImGui::SameLine();
 
 	if (ImGui::InputFloat("UI Scale", &UIScale, 0.05f, 0.5f))
@@ -402,7 +401,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 		}
 
 		ImGui::SameLine();
-		ImGui::InvisibleButton("##InvButton4", ImVec2(SPACING, 0));
+		ImGui::InvisibleButton("##InvButton4", ImVec2(SPACING, 1));
 		ImGui::SameLine();
 
 		if (ImGui::Button("Don't use T"))
@@ -443,7 +442,7 @@ void ScenarioEditor::OnGUI(Scenario & scenario)
 	ImGui::LabelText(ss.str().c_str(), "Idle time:");
 
 	ImGui::SameLine();
-	ImGui::InvisibleButton("##InvButton", ImVec2(100, 0));
+	ImGui::InvisibleButton("##InvButton", ImVec2(100, 1));
 	ImGui::SameLine();
 
 	ss.str(string());
@@ -471,7 +470,7 @@ void ScenarioEditor::DrawJobRun(JobRun & jobRun)
 	{
 		tlCorner.x = tl.x + borderPadding;
 
-		int colI = 0;
+		size_t colI = 0;
 		float preceedingEnd = tlCorner.x;
 
 		for (size_t j = 0; j < jobRun.data.jobs.jobCount(i); j++)

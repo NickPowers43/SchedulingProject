@@ -12,11 +12,11 @@
 
 using namespace std;
 
-Scenario::Scenario() : jobs(vector<vector<ValType>>())
+Scenario::Scenario() : jobs(vector<vector<ValType>>()), isDirty(true)
 {
 	isDirty = true;
 }
-Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints, ValType t, bool useT) : jobs(jobs), syncPoints(syncPoints), t(t), useT(useT)
+Scenario::Scenario(Jobs jobs, vector<ValType> syncPoints, ValType t, bool useT) : jobs(jobs), syncPoints(syncPoints), t(t), useT(useT), isDirty(true)
 {
 }
 

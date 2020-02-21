@@ -57,6 +57,9 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Quotations.Evaluator">
+      <HintPath>..\packages\FSharp.Quotations.Evaluator.2.0.0\lib\netstandard2.0\FSharp.Quotations.Evaluator.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Solver.Foundation">
       <HintPath>..\packages\Unofficial.Microsoft.Solver.Foundation.Express.3.0.3\lib\net40\Microsoft.Solver.Foundation.dll</HintPath>
     </Reference>

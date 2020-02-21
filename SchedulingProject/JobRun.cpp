@@ -4,10 +4,10 @@
 
 using namespace std;
 
-JobRun::JobRun()
+JobRun::JobRun(): data(), jobStarts(), lastJob()
 {
 }
-JobRun::JobRun(Scenario & data) : data(data)
+JobRun::JobRun(Scenario & data) : data(data), jobStarts(), lastJob()
 {
 	for (size_t i = 0; i < data.jobs.serverCount(); i++)
 	{
@@ -25,15 +25,17 @@ void JobRun::Simulate()
 	sort(data.syncPoints.begin(), data.syncPoints.end());
 
 	jobStarts = vector<vector<ValType>>();
-	lastJob = vector<int>();
+	lastJob = vector<size_t>();
 	
 	//initialize job starts
-	for (size_t i = 0; i < data.jobs.serverCount(); i++)
+	while (jobStarts.size() < data.jobs.serverCount())
 	{
 		jobStarts.push_back(vector<ValType>());
 		lastJob.push_back(0);
 
-		for (size_t j = 0; j < data.jobs.jobCount(i); j++)
+		size_t serverI = jobStarts.size() - 1;
+
+		while (jobStarts.back().size() < data.jobs.jobCount(serverI))
 		{
 			jobStarts.back().push_back(VAL_ZERO);
 		}

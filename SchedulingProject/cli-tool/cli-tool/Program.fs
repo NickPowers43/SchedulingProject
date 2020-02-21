@@ -4,24 +4,28 @@
 open System.IO
 open System.Diagnostics
 
+open System.Collections.Generic
+
 open Microsoft.FSharp.Quotations
 open Microsoft.FSharp.Quotations.Patterns
 open Microsoft.FSharp.Quotations.DerivedPatterns
+open Microsoft.FSharp.Quotations.ExprShape
+open FSharp.Quotations.Evaluator
 
 
 type ValType = int
 type IdleTime = ValType
 type JobLength = ValType
-type ServerJobs = List<JobLength>
-type AllJobs = List<ServerJobs>
-type SyncPoints = List<ValType>
+type ServerJobs = JobLength list
+type AllJobs = ServerJobs list
+type SyncPoints = ValType list
 type BruteForceSolution = SyncPoints * IdleTime
 
 let valInf: ValType = Core.int32.MaxValue
 
 type Scenario =
-    val syncPoints: List<ValType>
-    val jobs: List<List<ValType>>
+    val syncPoints: SyncPoints
+    val jobs: AllJobs
     val t: ValType
     val useT: bool
     new(syncPoints, jobs, t, useT) = {
@@ -88,7 +92,7 @@ let sumIdleTime (a: IdleTime) (b: IdleTime) : IdleTime =
     else a + b
 
 // Simulatneously computes idle time before "time" and computes remaining work to be done
-let jobSplitter (time: ValType) (t: ValType) (useT: bool) : List<ValType> -> IdleTime * List<ValType> =
+let jobSplitter (time: ValType) (t: ValType) (useT: bool) : ServerJobs -> IdleTime * ServerJobs =
     fun jobs ->
         match jobs with
         | [] -> (0, [])
@@ -197,15 +201,24 @@ type UndefinedVar =
         columnIndex = columnIndex
     }
 
-type LinearExpr =
-    | LinearCombination
-    | GreaterThenElse of cond: LinearExpr * greater: LinearExpr * lessEqual: LinearExpr
+//type BinaryBooleanOp = 
+//    | GreaterThan
+//    | LessThan
+//    | GreaterThanEqual
+//    | LessThanEqual
 
-and LinearCombination = 
-    val coefficeints: ValType array
+//type LinearExpr =
+//    | LinearComb of LinearCombination
+//    | BinaryBoolean of a: LinearExpr * op: BinaryBooleanOp * b: LinearExpr
+//    | GreaterThenElse of cond: LinearExpr * greater: LinearExpr * lessEqual: LinearExpr
 
-and PieceWiseLinearExpr =
-    val boundaries: Set<PlaneIndex * ExpressionIndex>
+//and LinearCombination = 
+//    val coefficeints: ValType array
+//    member public this.IsConstant = 
+//        this.coefficeints.[1..] |> Array.forall ((=) 0)
+
+//and PieceWiseLinearExpr =
+//    val boundaries: Set<PlaneIndex * ExpressionIndex>
 
 
 type Solver() =
@@ -213,21 +226,37 @@ type Solver() =
     let addVariable(): UndefinedVar =
         UndefinedVar(0u) //TODO: implement
 
-    let minimize (objFunc: Expr) (objParams: obj list) =
+    member public this.minimize (objFunc: Expr) ([<System.ParamArray>] args: obj[]) : bool =
 
-        let variableScope = None
+        let variableStack = new Stack<Var list>()
 
-        let evalLinearExpr (expr: Expr) : LinearExpr =
-            match expr with
-            | IfThenElse(cond, ifTrueExpr, elseExpr) ->
-                //return an expression that splits the domain using "cond"
+        //let rec evalExpr (expr: Expr) : LinearExpr =
+        //    match expr with
+        //    | SpecificCall <@@ (<) @@> (_, _, exprList) ->
+        //        BinaryBoolean (evalExpr exprList.Head, LessThan, evalExpr exprList.Tail.Head)
+        //    | IfThenElse(cond, ifTrueExpr, elseExpr) ->
+        //        //return an expression that splits the domain using "cond"
+        //        let condVal = evalExpr cond
+        //        if condVal.IsConstant
+        //        then
+        //            if 
+        //        else GreaterThenElse (evalExpr cond, evalExpr ifTrueExpr, evalExpr elseExpr)
+        //    | _ -> printfn "Not recognized"
 
-                //let condVal = evalExpr cond
-                //if condVal.isUndefined
-                //then 
-                //else
-                0
-            | _ -> printfn "Not recognized"
+        let ifHandler (cond: ValType) (trueVal: Lazy<ValType>) (falseVal: Lazy<ValType>) : ValType =
+            0
+
+        let rec mapExpr (expression: Expr) : Expr =
+            match expression with
+            | IfThenElse(cond, trueExpr, falseExpr) ->
+                // repalce if then else expressions with function call
+                let nTrueExpr = mapExpr trueExpr
+                let nFalseExpr = mapExpr falseExpr
+                <@@ ifHandler %%cond (lazy (%%nTrueExpr)) (lazy (%%nFalseExpr)) @@>
+            | ShapeVar var -> Expr.Var var
+            | ShapeLambda (var, expr) -> Expr.Lambda (var, mapExpr expr)
+            | ShapeCombination(shapeComboObject, exprList) ->
+                RebuildShapeCombination(shapeComboObject, List.map mapExpr exprList)
         
         let processRootLambda (objFuncParams: Var list list) (body: Expr) =
             printfn "lambda provided"
@@ -241,16 +270,22 @@ type Solver() =
 
         // evaluate and build expression tree that references defined and undefined variables
         match objFunc with
-        | Lambdas(pl, body) -> processRootLambda pl body
-        | _ -> printfn "No lambda provided"
+        | Lambdas(pl, body) ->
+            let mappedExpr = mapExpr objFunc
+            let res = mappedExpr |> QuotationEvaluator.Evaluate
+            processRootLambda pl body
+            true
+        | _ ->
+            printfn "No lambda provided"
+            false
 
 let runBruteOptimizerLP path =
     
-    //let scenario = loadScenario path
+    let scenario = loadScenario path
     
     let objectiveFunc = <@ fun (serverJobs: AllJobs) (syncPoints: SyncPoints) (t: ValType) ->
     
-        let isIncreasing (arr: List<ValType>) =
+        let isIncreasing (arr: ValType list) =
             arr.Length < 2 || (List.forall2 (fun a b -> a < b) arr.[..(arr.Length-2)] arr.[1..])
         
         let rec computeSingleServer (syncPoints: SyncPoints) (t: ValType) (jobs: ServerJobs) : ValType =
@@ -283,7 +318,11 @@ let runBruteOptimizerLP path =
             Some(idleTime)
         else None @>
     
-    minimizer objectiveFunc []
+    let solver = new Solver()
+
+    let optimal = solver.minimize objectiveFunc [scenario.jobs, scenario.syncPoints, scenario.t]
+
+    None
 
 [<EntryPoint>]
 let main argv =

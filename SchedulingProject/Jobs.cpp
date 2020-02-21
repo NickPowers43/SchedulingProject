@@ -4,7 +4,7 @@
 
 
 
-Jobs::Jobs()
+Jobs::Jobs(): jobs()
 {
 }
 Jobs::Jobs(vector<vector<ValType>> jobs) : jobs(jobs)
@@ -16,32 +16,32 @@ Jobs::~Jobs()
 {
 }
 
-int Jobs::serverCount()
+size_t Jobs::serverCount()
 {
 	return jobs.size();
 }
-int Jobs::jobCount(int server)
+size_t Jobs::jobCount(size_t server)
 {
 	return jobs[server].size();
 }
 
-ValType Jobs::getJob(int server, int index)
+ValType Jobs::getJob(size_t server, size_t index)
 {
 	return jobs[server][index];
 }
-void Jobs::setJob(int server, int index, ValType value)
+void Jobs::setJob(size_t server, size_t index, ValType value)
 {
 	jobs[server][index] = value;
 }
 
-void Jobs::split(Jobs &first, Jobs &remaining, int amount)
+void Jobs::split(Jobs &first, Jobs &remaining, size_t amount)
 {
 	vector<vector<ValType>> nJobs;
 	vector<vector<ValType>> rJobs;
 	for (size_t i = 0; i < jobs.size(); i++)
 	{
 		nJobs.push_back(vector<ValType>());
-		int limit = std::min(amount, jobCount(i));
+		size_t limit = std::min(amount, jobCount(i));
 		for (size_t j = 0; j < jobCount(i); j++)
 		{
 			if (j < amount) {
@@ -88,15 +88,15 @@ void Jobs::addServer()
 {
 	jobs.push_back(vector<ValType>());
 }
-void Jobs::addJob(int server, ValType length)
+void Jobs::addJob(size_t server, ValType length)
 {
 	jobs[server].push_back(length);
 }
-void Jobs::removeServer(int server)
+void Jobs::removeServer(size_t server)
 {
 	jobs.erase(jobs.begin() + server);
 }
-void Jobs::removeJob(int server, int index)
+void Jobs::removeJob(size_t server, size_t index)
 {
 	jobs[server].erase(jobs[server].begin() + index);
 }
